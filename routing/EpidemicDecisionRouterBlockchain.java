@@ -153,7 +153,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 index = i;
             }
         }
-
         return index;
     }
 
