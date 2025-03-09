@@ -112,14 +112,6 @@ public class Block {
     
     @Override
     public String toString() {
-//        return "Block{"
-//                + "previousHash='" + previousHash + '\''
-//                + ", transactions=" + transactions
-//                + ", timestamp=" + timestamp
-//                + ", nonce=" + nonce
-//                + ", blockHash='" + blockHash + '\''
-//                + ", intervalMining='" + intervalMining + '\''
-//                + '}';
         StringBuilder sb = new StringBuilder();
         sb.append("======================================"
                 + "BLOCK "

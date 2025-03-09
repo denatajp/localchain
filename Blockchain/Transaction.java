@@ -52,13 +52,6 @@ public class Transaction {
 
     @Override
     public String toString() {
-//        return "\nTRANSACTION{" +
-//                "\nsender='" + sender + '\'' +
-//                "\nreceiver='" + receiver + '\'' +
-//                "\namount=" + amount +
-//                "\ntimestamp=" + timestamp +
-//                "\ntransactionHash='" + transactionHash + '\'' +
-//                '}';
         return String.format(
                 "  - TRANSACTION:\n"
                 + "    Sender    : %s\n"
