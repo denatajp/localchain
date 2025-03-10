@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Localchain {
+
     private List<Block> chain;
     private final int difficulty;
 
@@ -23,7 +24,7 @@ public class Localchain {
     public Block getLatestBlock() {
         return chain.get(chain.size() - 1);
     }
-    
+
     public void addBlock(Block newBlock) {
         newBlock.mineBlock(difficulty);
         chain.add(newBlock);
@@ -61,5 +62,18 @@ public class Localchain {
             System.out.println("-------------------------------");
         }
     }
-}
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("================================ BLOCKCHAIN ================================\n");
+        sb.append("Blockchain Title  : Localchain\n");
+        sb.append("Difficulty Level  : ").append(difficulty).append("\n\n");
+        for (Block block : chain) {
+            sb.append(block.toString()).append("\n");
+        }
+        sb.append("============================================================================\n");
+        return sb.toString();
+    }
+
+}
