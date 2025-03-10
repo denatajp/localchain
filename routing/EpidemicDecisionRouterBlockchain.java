@@ -79,7 +79,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
             if (isMiner(peer)) {
 
-                if (!host.getVisitedMiner().containsKey(peer)) {
+                if (!host.getVisitedMiner().containsKey(peer)) { // jika baru pertama kali bertemu
 
                     host.getVisitedMiner().put(peer, System.currentTimeMillis());
                     System.out.println("Visited Miner : " + host.getVisitedMiner().size());
@@ -107,7 +107,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 }
             }
 
-////            if (isHome(peer)) {
+//             if (isHome(peer)) {
             if (host.getVisitedMiner().size() == 15) {
 
                 host.getVisitedMiner().clear();
@@ -126,10 +126,8 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 minedBlock.clear();
 
                 System.out.println(selectedBlock);
-
             }
         }
-
     }
 
     /**
