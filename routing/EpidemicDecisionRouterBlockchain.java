@@ -101,8 +101,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                     b.setIntervalMining(time);
                     System.out.println("Mining time : " + time + " ms");
-                    System.out.println("Mined by: " + peer);
-                    System.out.println("");
+                    System.out.println("Mined by: " + peer + "\n");
 
                     minedBlock.add(b);
                 }
