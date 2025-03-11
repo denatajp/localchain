@@ -17,13 +17,16 @@ import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.map.SimMap;
 import routing.MessageRouter;
-
+import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 /**
  * A simulation scenario used for getting and storing the settings of a
  * simulation run.
  */
 public class SimScenario implements Serializable {
-
+    
     /**
      * a way to get a hold of this...
      */
@@ -31,7 +34,7 @@ public class SimScenario implements Serializable {
 
     public static final String TRANSAKSI_AWAL = "transaksiAwal";
     public static final String DIFFICULTY = "difficulty";
-    
+    public static final Map <Localchain,DTNHost> localChains = new HashMap<>();
     /**
      * namespace of scenario settings ({@value})
      */
@@ -195,6 +198,10 @@ public class SimScenario implements Serializable {
      * Map used for host movement (if any)
      */
     private SimMap simMap;
+
+    public Map<Localchain,DTNHost> getLocalChains() {
+        return localChains;
+    }
 
     /**
      * Global connection event listeners
