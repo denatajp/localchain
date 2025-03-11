@@ -7,6 +7,7 @@ public class Localchain {
 
     private List<Block> chain;
     private final int difficulty;
+    private String name;
 
     public Localchain(int difficulty) {
         this.chain = new ArrayList<>();
@@ -30,6 +31,14 @@ public class Localchain {
         chain.add(newBlock);
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public int getDifficulty() {
         return difficulty;
     }
@@ -48,7 +57,7 @@ public class Localchain {
             if (!currentBlock.getPreviousHash().equals(previousBlock.getHash())) {
                 return false;
             }
-        }
+        } 
         return true;
     }
 
@@ -67,7 +76,7 @@ public class Localchain {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("================================ BLOCKCHAIN ================================\n");
-        sb.append("Blockchain Title  : Localchain\n");
+        sb.append("Blockchain Title  : Localchain ").append(name).append("\n");
         sb.append("Difficulty Level  : ").append(difficulty).append("\n\n");
         for (Block block : chain) {
             sb.append(block.toString()).append("\n");

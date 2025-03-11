@@ -10,7 +10,6 @@ import core.Settings;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
 
 public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
@@ -21,7 +20,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     public static final String TOTAL_CONTACT_INTERVAL = "perTotalContact";
     public static final int DEFAULT_CONTACT_INTERVAL = 300;
     private static final String THRESHOLD = "threshold";
-    private static final int DEFAULT_THRESHOLD = 7;
+    private static final int DEFAULT_THRESHOLD = 6;
     private Double lastRecord = Double.MIN_VALUE;
     private int interval;
     private List<Block> minedBlock;
@@ -89,19 +88,19 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      * operation.
      */
     private void mining_algorithmOne(DTNHost host, DTNHost peer) {
-
+        
         if (isOperatorProxy(host)) {
-
+            
             List<List<Transaction>> trx = host.getTrx();
             Localchain localChain = host.getLocalchain();
             String previousHash = localChain.getLatestBlock().getHash();
 
             if (isMiner(peer)) {
-
+               
                 if (!host.getVisitedMiner().containsKey(peer)) { // jika baru pertama kali bertemu
 
                     host.getVisitedMiner().put(peer, System.currentTimeMillis());
-                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
+//                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
 
                     int indexBestTRX = getBestTranx(trx);
                     List<Transaction> bestTransactionList = new ArrayList<>(trx.get(indexBestTRX));
@@ -112,22 +111,22 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                     long begin = System.currentTimeMillis();
 
-                    System.out.println("Miner " + peer + " is mining block....");
+//                    System.out.println("Miner " + peer + " is mining block....");
                     b.mineBlock(localChain.getDifficulty());
 
                     long end = System.currentTimeMillis();
                     long time = end - begin;
 
                     b.setIntervalMining(time);
-                    System.out.println("Mining time : " + time + " ms");
-                    System.out.println("Mined by: " + peer + "\n");
+//                    System.out.println("Mining time : " + time + " ms");
+//                    System.out.println("Mined by: " + peer + "\n");
 
                     minedBlock.add(b);
                 }
             }
 
 //             if (isHome(peer)) {
-            if (host.getVisitedMiner().size() == 15) {
+            if (host.getVisitedMiner().size() == 7) {
 
                 host.getVisitedMiner().clear();
 
@@ -144,14 +143,16 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 // reset bestTransactionList minedBlock
                 minedBlock.clear();
 
-//                System.out.println(selectedBlock);
+//                System.out.println(host + " memilih blok " + selectedBlock);
             }
         }
     }
 
     private void verification_algorithmTwo(DTNHost host, DTNHost peer) {
-        if (isOperatorProxy(host)) {
 
+        if (isOperatorProxy(host)) {
+            
+            
             Localchain localChain = host.getLocalchain();
             Block selectedBlock = host.getSelectedBlock();
 
@@ -160,7 +161,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 if (!host.getVisitedMiner().containsKey(peer)) {// jika baru pertama kali bertemu
 
                     host.getVisitedMiner().put(peer, System.currentTimeMillis());
-                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
+//                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
 
                     String targetHash = selectedBlock.calculateHash();
 
@@ -170,20 +171,27 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     if (targetHash.equals(hash)) {
                         host.setV(host.getV() + 1);
                     }
+                    
+                    System.out.println("Jumlah V host " + host + " sebanyak " + host.getV());
                 }
 
-                System.out.println("V : " + host.getV());
+//                System.out.println("V : " + host.getV());
                 // System.out.println(host.getVisitedMiner()/2);
                 if (host.getV() == threshold) {
                     if (!(host.getV() > threshold)) {
                         //tambahkan selectedBlock ke dalam localchain
-                        System.out.println("Masuk taa");
+//                        System.out.println("Masuk taa");
                         localChain.addBlock(selectedBlock);
+                        
+//                        System.out.println("Blok " + selectedBlock.getHash() 
+//                                + "\ntelah ditambahkan ke " + localChain.getName() 
+//                                + " oleh " + host);
+                        
                         //reset v
                         host.setV(0);
                         //reset visitedMiner
                         host.getVisitedMiner().clear();
-                        System.out.println("Localchain : " + localChain);
+                        System.out.println("Localchain milik " + host + ":\n" + localChain);
                         host.setSelectedBlock(null);
 
                     }

@@ -12,6 +12,7 @@ import input.EventQueueHandler;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import movement.MapBasedMovement;
 import movement.MovementModel;
@@ -31,7 +32,7 @@ public class SimScenario implements Serializable {
 
     public static final String TRANSAKSI_AWAL = "transaksiAwal";
     public static final String DIFFICULTY = "difficulty";
-    
+
     /**
      * namespace of scenario settings ({@value})
      */
@@ -143,10 +144,9 @@ public class SimScenario implements Serializable {
      */
     private static final String APP_PACKAGE = "applications.";
 
-    
     private int transaksiAwal;
     private int difficulty;
-    
+
     /**
      * The world instance
      */
@@ -237,7 +237,7 @@ public class SimScenario implements Serializable {
         this.endTime = s.getDouble(END_TIME_S);
         this.updateInterval = s.getDouble(UP_INT_S);
         this.simulateConnections = s.getBoolean(SIM_CON_S);
-        
+
         this.transaksiAwal = s.getInt(TRANSAKSI_AWAL);
         this.difficulty = s.getInt(DIFFICULTY);
 
@@ -525,10 +525,13 @@ public class SimScenario implements Serializable {
                     List<List<Transaction>> list = Blockchain.Inisialisasi.inisialisasi(this.transaksiAwal);
                     host.setTrx(list);
                     host.setLocalchain(new Localchain(this.difficulty));
+                    host.getLocalchain().setName("Localchain " + host.toString());
                 }
 
+                
                 hosts.add(host);
             }
+
         }
     }
 
