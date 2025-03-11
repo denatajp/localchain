@@ -25,6 +25,9 @@ public class Block {
         this.intervalMining = intervalMining;
     }
 
+    public Block() {
+    }
+    
     public Block(String previousHash, List<Transaction> transactions, long timestamp) {
         this.previousHash = previousHash;
         this.transactions = transactions;

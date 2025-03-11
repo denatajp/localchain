@@ -1,13 +1,17 @@
 package Blockchain;
 
+import core.SimScenario;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Localchain {
 
     private List<Block> chain;
-    private final int difficulty;
+    private int difficulty;
     private String name;
+    private String hash;
 
     public Localchain(int difficulty) {
         this.chain = new ArrayList<>();
@@ -16,6 +20,44 @@ public class Localchain {
         chain.add(createGenesisBlock());
     }
 
+//    copy constructor
+    public Localchain(Localchain other) {
+        
+    }
+    
+    
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
+    public String calculateHash() {
+         
+         String totalHash = "";
+        for (int i = 0; i < chain.size(); i++) {
+            String hash = chain.get(i).getHash();
+            totalHash = totalHash+" + " +hash;
+        }
+        StringBuilder data = new StringBuilder(totalHash);
+     
+        return applySHA256(data.toString());
+    }
+    private String applySHA256(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                hexString.append(String.format("%02x", b));
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
     private Block createGenesisBlock() {
         List<Transaction> list = new ArrayList<>();
         list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
@@ -57,7 +99,7 @@ public class Localchain {
             if (!currentBlock.getPreviousHash().equals(previousBlock.getHash())) {
                 return false;
             }
-        } 
+        }
         return true;
     }
 
@@ -75,7 +117,7 @@ public class Localchain {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("================================ BLOCKCHAIN ================================\n");
+        sb.append("================================ LOCALCHAIN ================================\n");
         sb.append("Blockchain Title  : Localchain ").append(name).append("\n");
         sb.append("Difficulty Level  : ").append(difficulty).append("\n\n");
         for (Block block : chain) {

@@ -11,7 +11,9 @@ import input.EventQueueHandler;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import movement.MapBasedMovement;
@@ -32,6 +34,12 @@ public class SimScenario implements Serializable {
 
     public static final String TRANSAKSI_AWAL = "transaksiAwal";
     public static final String DIFFICULTY = "difficulty";
+
+    public static final Map<Localchain, DTNHost> localChains = new HashMap<>();
+
+    public Map<Localchain, DTNHost> getLocalChains() {
+        return localChains;
+    }
 
     /**
      * namespace of scenario settings ({@value})
@@ -528,7 +536,6 @@ public class SimScenario implements Serializable {
                     host.getLocalchain().setName("Localchain " + host.toString());
                 }
 
-                
                 hosts.add(host);
             }
 

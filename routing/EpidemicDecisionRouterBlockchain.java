@@ -7,9 +7,11 @@ import core.Connection;
 import core.DTNHost;
 import core.Message;
 import core.Settings;
+import core.SimScenario;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
@@ -72,7 +74,9 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 //            else if (host.getSelectedBlock() != null  && !(host.getTrx().size() == 1) ) {
 //                verification_algorithmTwo(host, peer);
 //            }
-
+            if (isHome(peer)) {
+                System.out.println(host + " bertemu dengan home!");
+            }
         }
 
     }
@@ -88,15 +92,15 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      * operation.
      */
     private void mining_algorithmOne(DTNHost host, DTNHost peer) {
-        
+
         if (isOperatorProxy(host)) {
-            
+
             List<List<Transaction>> trx = host.getTrx();
             Localchain localChain = host.getLocalchain();
             String previousHash = localChain.getLatestBlock().getHash();
 
             if (isMiner(peer)) {
-               
+
                 if (!host.getVisitedMiner().containsKey(peer)) { // jika baru pertama kali bertemu
 
                     host.getVisitedMiner().put(peer, System.currentTimeMillis());
@@ -151,8 +155,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     private void verification_algorithmTwo(DTNHost host, DTNHost peer) {
 
         if (isOperatorProxy(host)) {
-            
-            
+
             Localchain localChain = host.getLocalchain();
             Block selectedBlock = host.getSelectedBlock();
 
@@ -171,8 +174,8 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     if (targetHash.equals(hash)) {
                         host.setV(host.getV() + 1);
                     }
-                    
-                    System.out.println("Jumlah V host " + host + " sebanyak " + host.getV());
+
+//                    System.out.println("Jumlah V host " + host + " sebanyak " + host.getV());
                 }
 
 //                System.out.println("V : " + host.getV());
@@ -182,25 +185,42 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                         //tambahkan selectedBlock ke dalam localchain
 //                        System.out.println("Masuk taa");
                         localChain.addBlock(selectedBlock);
-                        
+
 //                        System.out.println("Blok " + selectedBlock.getHash() 
 //                                + "\ntelah ditambahkan ke " + localChain.getName() 
 //                                + " oleh " + host);
-                        
                         //reset v
                         host.setV(0);
                         //reset visitedMiner
                         host.getVisitedMiner().clear();
-                        System.out.println("Localchain milik " + host + ":\n" + localChain);
+//                        System.out.println("Localchain milik " + host + ":\n" + localChain);
                         host.setSelectedBlock(null);
 
                     }
-                }
-            }
+                    Map<Localchain, DTNHost> localChains = SimScenario.getInstance().getLocalChains();
+                    localChains.put(host.getLocalchain(), host);
 
+                    System.out.println(localChains.size());
+                }
+
+            }
         }
     }
-
+    private void selection_algorithmThree(DTNHost host, DTNHost peer){
+        Map<Localchain, DTNHost> localChains = SimScenario.getInstance().getLocalChains();
+        if (localChains.size() == 8) {
+//            for (int i = 0; i < localChains.size(); i++) {
+//                
+//            }
+            for (Map.Entry<Localchain, DTNHost> lc : localChains.entrySet()) {
+                Localchain l = lc.getKey();
+                l.calculateHash();
+                peer.getCompletedLocalChains().add(new Localchain(l));
+            }
+            
+            
+        }
+    }
     /**
      * Finds the index of the transaction list with the highest total amount.
      *
