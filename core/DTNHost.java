@@ -46,7 +46,7 @@ public class DTNHost implements Comparable<DTNHost> {
     private Localchain localchain;
     private Block selectedBlock;
     private Map<DTNHost, Long> visitedMiner;
-
+    private int v=0;
     static {
         DTNSim.registerForReset(DTNHost.class.getCanonicalName());
         reset();
@@ -105,6 +105,14 @@ public class DTNHost implements Comparable<DTNHost> {
                 l.initialLocation(this, this.location);
             }
         }
+    }
+
+    public int getV() {
+        return v;
+    }
+
+    public void setV(int v) {
+        this.v = v;
     }
 
     public Block getSelectedBlock() {

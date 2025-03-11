@@ -7,21 +7,28 @@ import core.Connection;
 import core.DTNHost;
 import core.Message;
 import core.Settings;
+import core.SimScenario;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     /**
      * For Report purpose, maybe needed some variable
      */
-    protected LinkedList<Double> resourcesList;
+    protected LinkedList<Double> resourcesList; 
     public static final String TOTAL_CONTACT_INTERVAL = "perTotalContact";
     public static final int DEFAULT_CONTACT_INTERVAL = 300;
+    private static final String THRESHOLD = "threshold";
+    private static final int DEFAULT_THRESHOLD = 7;
     private Double lastRecord = Double.MIN_VALUE;
     private int interval;
     private List<Block> minedBlock;
+    private int threshold;
 
     public EpidemicDecisionRouterBlockchain(Settings s) {
         minedBlock = new ArrayList<>();
@@ -30,6 +37,12 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         } else {
             interval = DEFAULT_CONTACT_INTERVAL;
         }
+
+        if (s.contains(THRESHOLD)) {
+            threshold = s.getInt(THRESHOLD);
+        } else {
+            threshold = DEFAULT_THRESHOLD;
+        }
     }
 
     public EpidemicDecisionRouterBlockchain(EpidemicDecisionRouterBlockchain proto) {
@@ -37,6 +50,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         resourcesList = new LinkedList<>();
         interval = proto.interval;
         lastRecord = proto.lastRecord;
+        this.threshold = proto.threshold;
     }
 
     @Override
@@ -53,8 +67,12 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         DTNHost host = con.getOtherNode(peer);
 
         //jalankan algoritma pertama MINING
-        if (isOperatorProxy(host) && !host.getTrx().isEmpty()) {
-            mining_algorithmOne(host, peer);
+        if (isOperatorProxy(host)) {
+            if (host.getSelectedBlock() == null && !host.getTrx().isEmpty()) {
+                mining_algorithmOne(host, peer);
+            } else if (host.getSelectedBlock() != null) {
+                verification_algorithmTwo(host, peer);
+            } 
         }
 
     }
@@ -82,7 +100,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 if (!host.getVisitedMiner().containsKey(peer)) { // jika baru pertama kali bertemu
 
                     host.getVisitedMiner().put(peer, System.currentTimeMillis());
-                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
+//                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
 
                     int indexBestTRX = getBestTranx(trx);
                     List<Transaction> bestTransactionList = new ArrayList<>(trx.get(indexBestTRX));
@@ -93,15 +111,15 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                     long begin = System.currentTimeMillis();
 
-                    System.out.println("Miner " + peer + " is mining block....");
+//                    System.out.println("Miner " + peer + " is mining block....");
                     b.mineBlock(localChain.getDifficulty());
 
                     long end = System.currentTimeMillis();
                     long time = end - begin;
 
                     b.setIntervalMining(time);
-                    System.out.println("Mining time : " + time + " ms");
-                    System.out.println("Mined by: " + peer + "\n");
+//                    System.out.println("Mining time : " + time + " ms");
+//                    System.out.println("Mined by: " + peer + "\n");
 
                     minedBlock.add(b);
                 }
@@ -125,10 +143,59 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 // reset bestTransactionList minedBlock
                 minedBlock.clear();
 
-                System.out.println(selectedBlock);
+//                System.out.println(selectedBlock);
             }
         }
     }
+
+    private void verification_algorithmTwo(DTNHost host, DTNHost peer) {
+        if (isOperatorProxy(host)) {
+
+            Localchain localChain = host.getLocalchain();
+            Block selectedBlock = host.getSelectedBlock();
+
+            if (isMiner(peer)) {
+
+                if (!host.getVisitedMiner().containsKey(peer)) {// jika baru pertama kali bertemu
+
+                    host.getVisitedMiner().put(peer, System.currentTimeMillis());
+//                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
+
+                    String targetHash = selectedBlock.calculateHash();
+
+                    Block b = new Block(selectedBlock);
+                    String hash = b.calculateHash();
+
+                    if (targetHash.equals(hash)) {
+                        host.setV(host.getV() + 1);
+                    }
+                }
+
+//                System.out.println("V : " + host.getV());
+                // System.out.println(host.getVisitedMiner()/2);
+                if (host.getV() == threshold) {
+                    if (!(host.getV() > threshold)) {
+                        //tambahkan selectedBlock ke dalam localchain
+                        localChain.addBlock(selectedBlock);
+                        //reset v
+                        host.setV(0);
+                        //reset visitedMiner
+                        host.getVisitedMiner().clear();
+                        //System.out.println(localChain);
+                        host.setSelectedBlock(null);
+                    }
+                }
+            }
+        Map<Localchain, DTNHost> localChains = SimScenario.getInstance().getLocalChains();
+        localChains.put(host.getLocalchain(), host);
+
+        System.out.println(host.getLocalchain());
+        System.out.println("Localchain size : "+ localChains.size());
+            
+            
+        }
+
+   } 
 
     /**
      * Finds the index of the transaction list with the highest total amount.

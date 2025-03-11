@@ -59,7 +59,7 @@ public class Block {
             nonce++;
             blockHash = calculateHash();
         }
-        System.out.println("Block Mined: " + blockHash);
+//        System.out.println("Block Mined: " + blockHash);
     }
 
     private String repeatZero(int count) {
@@ -113,7 +113,7 @@ public class Block {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("======================================"
+        sb.append("====================================== "
                 + "BLOCK "
                 + "======================================\n")
                 .append("Previous Hash   : ").append(previousHash).append("\n")
