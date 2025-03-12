@@ -42,11 +42,24 @@ public class DTNHost implements Comparable<DTNHost> {
     private List<NetworkInterface> net;
     private ModuleCommunicationBus comBus;
 
+    /* ---------------------- FIELD OPERATOR PROXY ------------------- */
     private List<List<Transaction>> trx;
-    private Localchain localchain;
-    private Block selectedBlock;
     private Map<DTNHost, Long> visitedMiner;
-    private int v=0;
+    private Block selectedBlock;
+    private int v;
+    private Localchain localchain;
+    private boolean readyToStore;
+    /* --------------------------------------------------------------- */
+
+    /* ----------------------- FIELD HOME ---------------------------- */
+    private List<Localchain> storedLocalchains;
+    private Set<DTNHost> visitedOperatorProxy;
+    /* --------------------------------------------------------------- */
+    
+    /* ----------------------- FIELD COLLECTOR ----------------------- */
+    private List<Localchain> completedLocalchains;
+    /* --------------------------------------------------------------- */
+
     static {
         DTNSim.registerForReset(DTNHost.class.getCanonicalName());
         reset();
@@ -82,9 +95,20 @@ public class DTNHost implements Comparable<DTNHost> {
 
         // HASHSET UNTUK MENANDAKAN MINER SUDAH DIKUNJUNGI
         if (this.name.startsWith("ope")) {
-            this.visitedMiner = new HashMap<>();    
+            this.visitedMiner = new HashMap<>();
+            this.v = 0;
         }
-        
+
+        if (this.name.startsWith("hom")) {
+            this.storedLocalchains = new ArrayList<>();
+            this.visitedOperatorProxy = new HashSet<>();
+            this.readyToStore = false;
+        }
+
+        if (this.name.startsWith("col")) {
+            this.completedLocalchains = new ArrayList<>();
+        }
+
         // TODO - think about the names of the interfaces and the nodes
         //this.name = groupId + ((NetworkInterface)net.get(1)).getAddress();
         this.msgListeners = msgLs;
@@ -105,6 +129,26 @@ public class DTNHost implements Comparable<DTNHost> {
                 l.initialLocation(this, this.location);
             }
         }
+    }
+
+    public boolean isReadyToStore() {
+        return readyToStore;
+    }
+
+    public void setReadyToStore(boolean readyToStore) {
+        this.readyToStore = readyToStore;
+    }
+
+    public List<Localchain> getStoredLocalchains() {
+        return storedLocalchains;
+    }
+
+    public Set<DTNHost> getVisitedOperatorProxy() {
+        return visitedOperatorProxy;
+    }
+
+    public List<Localchain> getCompletedLocalchains() {
+        return completedLocalchains;
     }
 
     public int getV() {
@@ -147,8 +191,6 @@ public class DTNHost implements Comparable<DTNHost> {
         this.visitedMiner = visitedMiner;
     }
 
-
-    
     /**
      * Returns a new network interface address and increments the address for
      * subsequent calls.

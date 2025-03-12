@@ -1,5 +1,5 @@
 Message stats for scenario Mining
-sim_time: 100000.0000
+sim_time: 200000.0000
 created: 0
 started: 0
 relayed: 0

@@ -64,19 +64,45 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     public void doExchangeForNewConnection(Connection con, DTNHost peer) {
         DTNHost host = con.getOtherNode(peer);
 
-        //jalankan algoritma pertama MINING
         if (isOperatorProxy(host)) {
-            if (host.getSelectedBlock() == null && !host.getTrx().isEmpty()) {
-                mining_algorithmOne(host, peer);
-            } else if (host.getSelectedBlock() != null) {
-                verification_algorithmTwo(host, peer);
-            }
-//            else if (host.getSelectedBlock() != null  && !(host.getTrx().size() == 1) ) {
-//                verification_algorithmTwo(host, peer);
-//            }
-            if (isHome(peer)) {
-                System.out.println(host + " bertemu dengan home!");
-            }
+
+            /*
+             * Mining dilakukan oleh Operator proxy dan Miner dengan cara
+            membagikan list transaksi ke para miner di area tersebut, tujuannya
+            untuk memilih blok terbaik dengan interval waktu mining tercepat, 
+            lalu akan disimpan ke dalam selectedBlock. Saat selectedBlock
+            terisi, proses selanjutnya yaitu memverifikasi blok.
+             */
+            mining_algorithmOne(host, peer);
+
+            /*
+             * Setelah memilih blok terbaik, operator proxy kembali membagikan
+            hasil blok terbaik tersebut kepada miner untuk diverifikasi, hasil
+            verifikasi beriringan dengan bertambahnya nilai v, jika nilai v
+            sudah memenuhi threshold, blok dianggap valid dan ditambahkan ke
+            dalam chain lokal yaitu localChain yang dimiliki oleh para Operator
+            Proxy. Proses mining dan verification berlangsung berurutan, jika
+            verifikasi selesai namun masih ada list transaksi di Operator Proxy
+            yang belum diurus, maka kembali lagi ke proses mining. Proses selan-
+            jutnya akan dilakukan saat list transaksi pada Operator Proxy sudah 
+            tidak ada lagi.
+             */
+            verification_algorithmTwo(host, peer);
+
+            /*
+            * Setelah list transaksi sudah habis, dan proses verifikasi sudah
+            dilakukan dan ditambahkan ke localchain milik masing-masing 
+            Operator Proxy, operator proxy menyetor localchainnya ke home saat
+            mereka bertemu, perlu diingat Operator Proxy memiliki field
+            "readyToStore" untuk menandakan sudah tidak ada list transaksi
+            tersisa untuk diproses, jika bernilai true, localchain dari masing-
+            masing Operator Proxy akan disetor ke Home (storedLocalchain).
+            */
+            storing_algorithmThree(host, peer);
+        }
+        
+        if (isHome(host)) {
+            
         }
 
     }
@@ -93,7 +119,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      */
     private void mining_algorithmOne(DTNHost host, DTNHost peer) {
 
-        if (isOperatorProxy(host)) {
+        if (host.getSelectedBlock() == null && !host.getTrx().isEmpty()) {
 
             List<List<Transaction>> trx = host.getTrx();
             Localchain localChain = host.getLocalchain();
@@ -104,7 +130,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 if (!host.getVisitedMiner().containsKey(peer)) { // jika baru pertama kali bertemu
 
                     host.getVisitedMiner().put(peer, System.currentTimeMillis());
-//                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
 
                     int indexBestTRX = getBestTranx(trx);
                     List<Transaction> bestTransactionList = new ArrayList<>(trx.get(indexBestTRX));
@@ -115,21 +140,17 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                     long begin = System.currentTimeMillis();
 
-//                    System.out.println("Miner " + peer + " is mining block....");
                     b.mineBlock(localChain.getDifficulty());
 
                     long end = System.currentTimeMillis();
                     long time = end - begin;
 
                     b.setIntervalMining(time);
-//                    System.out.println("Mining time : " + time + " ms");
-//                    System.out.println("Mined by: " + peer + "\n");
 
                     minedBlock.add(b);
                 }
             }
 
-//             if (isHome(peer)) {
             if (host.getVisitedMiner().size() == 7) {
 
                 host.getVisitedMiner().clear();
@@ -147,14 +168,13 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 // reset bestTransactionList minedBlock
                 minedBlock.clear();
 
-//                System.out.println(host + " memilih blok " + selectedBlock);
             }
         }
     }
 
     private void verification_algorithmTwo(DTNHost host, DTNHost peer) {
 
-        if (isOperatorProxy(host)) {
+        if (host.getSelectedBlock() != null) {
 
             Localchain localChain = host.getLocalchain();
             Block selectedBlock = host.getSelectedBlock();
@@ -164,7 +184,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 if (!host.getVisitedMiner().containsKey(peer)) {// jika baru pertama kali bertemu
 
                     host.getVisitedMiner().put(peer, System.currentTimeMillis());
-//                    System.out.println("Visited Miner : " + host.getVisitedMiner().size());
 
                     String targetHash = selectedBlock.calculateHash();
 
@@ -174,53 +193,58 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     if (targetHash.equals(hash)) {
                         host.setV(host.getV() + 1);
                     }
-
-//                    System.out.println("Jumlah V host " + host + " sebanyak " + host.getV());
                 }
 
-//                System.out.println("V : " + host.getV());
-                // System.out.println(host.getVisitedMiner()/2);
                 if (host.getV() == threshold) {
                     if (!(host.getV() > threshold)) {
-                        //tambahkan selectedBlock ke dalam localchain
-//                        System.out.println("Masuk taa");
-                        localChain.addBlock(selectedBlock);
 
-//                        System.out.println("Blok " + selectedBlock.getHash() 
-//                                + "\ntelah ditambahkan ke " + localChain.getName() 
-//                                + " oleh " + host);
+                        //tambahkan selectedBlock ke dalam localchain
+                        localChain.addBlock(new Block(selectedBlock));
+
                         //reset v
                         host.setV(0);
+
                         //reset visitedMiner
                         host.getVisitedMiner().clear();
-//                        System.out.println("Localchain milik " + host + ":\n" + localChain);
+
+                        // reset selectedBlock
                         host.setSelectedBlock(null);
 
-                    }
-                    Map<Localchain, DTNHost> localChains = SimScenario.getInstance().getLocalChains();
-                    localChains.put(host.getLocalchain(), host);
-
-                    System.out.println(localChains.size());
+                        if (host.getTrx().isEmpty() && host.isReadyToStore()  == false) {
+                            host.setReadyToStore(true);
+                        }
+                    }   
                 }
 
             }
         }
     }
-    private void selection_algorithmThree(DTNHost host, DTNHost peer){
-        Map<Localchain, DTNHost> localChains = SimScenario.getInstance().getLocalChains();
-        if (localChains.size() == 8) {
-//            for (int i = 0; i < localChains.size(); i++) {
-//                
-//            }
-            for (Map.Entry<Localchain, DTNHost> lc : localChains.entrySet()) {
-                Localchain l = lc.getKey();
-                l.calculateHash();
-                peer.getCompletedLocalChains().add(new Localchain(l));
+
+    private void storing_algorithmThree(DTNHost host, DTNHost peer) {
+        if (isHome(peer)) {
+            if (!peer.getVisitedOperatorProxy().contains(host)) {
+                if (host.isReadyToStore()) {
+                    peer.getVisitedOperatorProxy().add(host);
+                    peer.getStoredLocalchains().add(host.getLocalchain());
+                    System.out.println("Localchain " + host +  " stored!, "
+                                        + "Storage size: " + peer.getStoredLocalchains().size());
+                }
             }
-            
-            
         }
     }
+
+    private void selection_algorithmThree(DTNHost host, DTNHost peer) {
+        if (isCollector(peer)) {
+            if (host.getStoredLocalchains().size()==8) {
+                for (Localchain sL : host.getStoredLocalchains()) {
+                    sL.calculateHash();
+                    peer.getCompletedLocalchains().add(sL);
+                    
+                }
+            }
+        }
+    }
+
     /**
      * Finds the index of the transaction list with the highest total amount.
      *

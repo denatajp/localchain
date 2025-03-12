@@ -22,7 +22,10 @@ public class Localchain {
 
 //    copy constructor
     public Localchain(Localchain other) {
-        
+        this.chain = other.chain;
+        this.difficulty = other.difficulty;
+        this.name = other.name;
+        this.hash = other.hash;
     }
     
     
@@ -69,10 +72,14 @@ public class Localchain {
     }
 
     public void addBlock(Block newBlock) {
-        newBlock.mineBlock(difficulty);
+//        newBlock.mineBlock(difficulty);
         chain.add(newBlock);
     }
 
+    public int chainSize() {
+        return chain.size();
+    }
+    
     public String getName() {
         return name;
     }

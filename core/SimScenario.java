@@ -35,11 +35,6 @@ public class SimScenario implements Serializable {
     public static final String TRANSAKSI_AWAL = "transaksiAwal";
     public static final String DIFFICULTY = "difficulty";
 
-    public static final Map<Localchain, DTNHost> localChains = new HashMap<>();
-
-    public Map<Localchain, DTNHost> getLocalChains() {
-        return localChains;
-    }
 
     /**
      * namespace of scenario settings ({@value})
