@@ -241,6 +241,8 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     peer.getCompletedLocalchains().add(sL);
                     
                 }
+                
+                
             }
         }
     }
