@@ -15,7 +15,9 @@ public class Blockchain {
     }
 
     private Block createGenesisBlock() {
-        return new Block("0", null, 0);
+        List<Transaction> list = new ArrayList<>();
+        list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
+        return new Block("0", list, System.currentTimeMillis());
     }
 
     public Block getLatestBlock() {
@@ -23,8 +25,14 @@ public class Blockchain {
     }
 
     public void addBlock(Block newBlock) {
-        newBlock.mineBlock(difficulty);
         chain.add(newBlock);
+    }
+    public void addBlockFromLocalChain(Localchain localChain){
+        List<Block> blockFromLocalchain = new ArrayList<>(localChain.getChain());
+        for (Block block : blockFromLocalchain) {
+            addBlock(block);
+            
+        }
     }
 
     public boolean isChainValid() {

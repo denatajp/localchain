@@ -27,8 +27,7 @@ public class Localchain {
         this.name = other.name;
         this.hash = other.hash;
     }
-    
-    
+
     public String getHash() {
         return hash;
     }
@@ -38,16 +37,17 @@ public class Localchain {
     }
 
     public String calculateHash() {
-         
-         String totalHash = "";
+
+        String totalHash = "";
         for (int i = 0; i < chain.size(); i++) {
             String hash = chain.get(i).getHash();
-            totalHash = totalHash+" + " +hash;
+            totalHash = totalHash + " + " + hash;
         }
         StringBuilder data = new StringBuilder(totalHash);
-     
+
         return applySHA256(data.toString());
     }
+
     private String applySHA256(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -61,6 +61,7 @@ public class Localchain {
             throw new RuntimeException(e);
         }
     }
+
     private Block createGenesisBlock() {
         List<Transaction> list = new ArrayList<>();
         list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
@@ -79,7 +80,7 @@ public class Localchain {
     public int chainSize() {
         return chain.size();
     }
-    
+
     public String getName() {
         return name;
     }
@@ -90,6 +91,14 @@ public class Localchain {
 
     public int getDifficulty() {
         return difficulty;
+    }
+
+    public List<Block> getChain() {
+        return chain;
+    }
+
+    public void setChain(List<Block> chain) {
+        this.chain = chain;
     }
 
     public boolean isChainValid() {
@@ -125,8 +134,9 @@ public class Localchain {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("================================ LOCALCHAIN ================================\n");
-        sb.append("Blockchain Title  : Localchain ").append(name).append("\n");
-        sb.append("Difficulty Level  : ").append(difficulty).append("\n\n");
+        sb.append("Localchain Title  : ").append(name).append("\n");
+        sb.append("Difficulty Level  : ").append(difficulty).append("\n");
+        sb.append("Localchain Hash   : ").append(hash).append("\n");
         for (Block block : chain) {
             sb.append(block.toString()).append("\n");
         }
