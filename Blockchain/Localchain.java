@@ -92,6 +92,14 @@ public class Localchain {
         return difficulty;
     }
 
+    public List<Block> getChain() {
+        return chain;
+    }
+
+    public void setChain(List<Block> chain) {
+        this.chain = chain;
+    }
+    
     public boolean isChainValid() {
         for (int i = 1; i < chain.size(); i++) {
             Block currentBlock = chain.get(i);

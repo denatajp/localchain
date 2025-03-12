@@ -23,8 +23,14 @@ public class Blockchain {
     }
 
     public void addBlock(Block newBlock) {
-        newBlock.mineBlock(difficulty);
         chain.add(newBlock);
+    }
+    public void addBlockFromLocalChain(Localchain localChain){
+        List<Block> blockFromLocalchain = new ArrayList<>(localChain.getChain());
+        for (Block block : blockFromLocalchain) {
+            addBlock(block);
+            
+        }
     }
 
     public boolean isChainValid() {

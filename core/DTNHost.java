@@ -5,6 +5,7 @@
 package core;
 
 import Blockchain.Block;
+import Blockchain.Blockchain;
 import Blockchain.Localchain;
 import Blockchain.Transaction;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
     /* ---------------------- FIELD OPERATOR PROXY ------------------- */
     private List<List<Transaction>> trx;
-    private Map<DTNHost, Long> visitedMiner;
+    private Set<DTNHost> visitedMiner;
     private Block selectedBlock;
     private int v;
     private Localchain localchain;
@@ -58,7 +59,28 @@ public class DTNHost implements Comparable<DTNHost> {
     
     /* ----------------------- FIELD COLLECTOR ----------------------- */
     private List<Localchain> completedLocalchains;
+    private Localchain selectedLocalchain;
     /* --------------------------------------------------------------- */
+    
+     /* ----------------------- FIELD INTERNET ----------------------- */
+    private Blockchain mainChain;
+    /* --------------------------------------------------------------- */
+
+    public Blockchain getMainChain() {
+        return mainChain;
+    }
+
+    public void setMainChain(Blockchain mainChain) {
+        this.mainChain = mainChain;
+    }
+    
+    public Localchain getSelectedLocalchain() {
+        return selectedLocalchain;
+    }
+
+    public void setSelectedLocalchain(Localchain selectedLocalchain) {
+        this.selectedLocalchain = selectedLocalchain;
+    }
 
     static {
         DTNSim.registerForReset(DTNHost.class.getCanonicalName());
@@ -95,7 +117,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
         // HASHSET UNTUK MENANDAKAN MINER SUDAH DIKUNJUNGI
         if (this.name.startsWith("ope")) {
-            this.visitedMiner = new HashMap<>();
+            this.visitedMiner = new HashSet<>();
             this.v = 0;
         }
 
@@ -107,6 +129,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
         if (this.name.startsWith("col")) {
             this.completedLocalchains = new ArrayList<>();
+            
         }
 
         // TODO - think about the names of the interfaces and the nodes
@@ -183,11 +206,11 @@ public class DTNHost implements Comparable<DTNHost> {
         this.localchain = localchain;
     }
 
-    public Map<DTNHost, Long> getVisitedMiner() {
+    public Set<DTNHost> getVisitedMiner() {
         return visitedMiner;
     }
 
-    public void setVisitedMiner(Map<DTNHost, Long> visitedMiner) {
+    public void setVisitedMiner(Set <DTNHost> visitedMiner) {
         this.visitedMiner = visitedMiner;
     }
 

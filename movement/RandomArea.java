@@ -175,6 +175,12 @@ public class RandomArea extends MovementModel {
                 minY = 500;
                 maxY = 1000;
                 break;
+            case 18 : 
+                minX = 500;
+                maxX = 1200;
+                minY = 500;
+                maxY = 500;
+                break;
             default:
                 throw new IllegalArgumentException("Area harus antara 1-4 atau 6-9 (area 5 tidak bisa dipilih)");
         }

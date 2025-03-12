@@ -4,6 +4,8 @@
  */
 package core;
 
+import Blockchain.Blockchain;
+import Blockchain.Inisialisasi;
 import Blockchain.Localchain;
 import Blockchain.Transaction;
 import input.EventQueue;
@@ -34,7 +36,6 @@ public class SimScenario implements Serializable {
 
     public static final String TRANSAKSI_AWAL = "transaksiAwal";
     public static final String DIFFICULTY = "difficulty";
-
 
     /**
      * namespace of scenario settings ({@value})
@@ -149,7 +150,7 @@ public class SimScenario implements Serializable {
 
     private int transaksiAwal;
     private int difficulty;
-
+    public int localChainCount = 8;
     /**
      * The world instance
      */
@@ -525,12 +526,15 @@ public class SimScenario implements Serializable {
                         mmProto, mRouterProto);
 
                 if (isOperatorProxy(host)) {
-                    List<List<Transaction>> list = Blockchain.Inisialisasi.inisialisasi(this.transaksiAwal);
+                    List<List<Transaction>> list = Inisialisasi.inisialisasi(this.transaksiAwal);
                     host.setTrx(list);
                     host.setLocalchain(new Localchain(this.difficulty));
                     host.getLocalchain().setName("Localchain " + host.toString());
                 }
-
+                if (isInternet(host)) {
+                    Blockchain existingBlockchain = new Blockchain(this.difficulty);
+                    host.setMainChain(existingBlockchain);
+                }
                 hosts.add(host);
             }
 
@@ -551,6 +555,10 @@ public class SimScenario implements Serializable {
 
     private boolean isCollector(DTNHost host) {
         return host.toString().startsWith("col");
+    }
+
+    private boolean isInternet(DTNHost host) {
+        return host.toString().startsWith("internet");
     }
 
     /**
