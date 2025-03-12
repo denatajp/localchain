@@ -17,17 +17,9 @@ public class Block {
     private DTNHost minedBy;
     private double fee;
 
-    public long getIntervalMining() {
-        return intervalMining;
-    }
-
-    public void setIntervalMining(long intervalMining) {
-        this.intervalMining = intervalMining;
-    }
-
     public Block() {
     }
-    
+
     public Block(String previousHash, List<Transaction> transactions, long timestamp) {
         this.previousHash = previousHash;
         this.transactions = transactions;
@@ -48,12 +40,24 @@ public class Block {
         this.minedBy = other.minedBy;
     }
 
+    public long getIntervalMining() {
+        return intervalMining;
+    }
+
+    public void setIntervalMining(long intervalMining) {
+        this.intervalMining = intervalMining;
+    }
+
     public String calculateHash() {
         StringBuilder data = new StringBuilder(previousHash + timestamp + nonce);
         for (Transaction tx : transactions) {
             data.append(tx.getTransactionHash());
         }
         return applySHA256(data.toString());
+    }
+
+    public void recalculateHash() {
+        this.blockHash = calculateHash();
     }
 
     public void mineBlock(int difficulty) {
@@ -91,6 +95,10 @@ public class Block {
         return blockHash;
     }
 
+    public void setPreviousHash(String previousHash) {
+        this.previousHash = previousHash;
+    }
+
     public String getPreviousHash() {
         return previousHash;
     }
@@ -111,8 +119,6 @@ public class Block {
         this.fee = fee;
     }
 
-    
-    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

@@ -239,44 +239,46 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     private void selection_algorithmFour(DTNHost host, DTNHost peer) {
         if (isCollector(peer)) {
 
-            System.out.println("Size stored: " + host.getStoredLocalchains().size() + "/" + SimScenario.getInstance().localChainCount);
+            if (peer.getSelectedLocalchain() == null) {
 
-            if (host.getStoredLocalchains().size() == SimScenario.getInstance().localChainCount) {
-                if (host.getStoredLocalchains().isEmpty()) {
-                    System.out.println("SEMUA TRANSAKSI SUDAH DITAMBAHKAN DI BLOCKCHAIN");
-                    System.exit(0);
-                }
+//                System.out.println("Size stored: " + host.getStoredLocalchains().size() + "/" + SimScenario.getInstance().localChainCount);
 
-                for (Localchain sL : host.getStoredLocalchains()) {
-                    String hash = sL.calculateHash();
-                    sL.setHash(hash);
-                }
-
-                Localchain selected = null;
-                for (Localchain lc : host.getStoredLocalchains()) {
-                    if (selected == null || lc.chainSize() > selected.chainSize()) {
-                        selected = lc;
+                if (host.getStoredLocalchains().size() == SimScenario.getInstance().localChainCount) {
+                    if (host.getStoredLocalchains().isEmpty()) {
+                        System.out.println("SEMUA TRANSAKSI SUDAH DITAMBAHKAN DI BLOCKCHAIN");
+                        System.exit(0);
                     }
+
+                    for (Localchain sL : host.getStoredLocalchains()) {
+                        String hash = sL.calculateHash();
+                        sL.setHash(hash);
+                    }
+
+                    Localchain selected = null;
+                    for (Localchain lc : host.getStoredLocalchains()) {
+                        if (selected == null || lc.chainSize() > selected.chainSize()) {
+                            selected = lc;
+                        }
+                    }
+                    peer.setSelectedLocalchain(selected);
+
+                    host.getStoredLocalchains().remove(selected);
+
+                    System.out.println("Localchain terbaik berhasil dipilih! "
+                            + "Mengunggah ke internet......");
+
                 }
-                peer.setSelectedLocalchain(selected);
-
-//                System.out.println("Selected localchains: " + peer.getSelectedLocalchain().getName());
-                host.getStoredLocalchains().remove(selected);
-
-                System.out.println("Localchain terbaik berhasil dipilih! "
-                        + "Mengunggah ke internet......");
-                SimScenario.getInstance().localChainCount--;
             }
         }
     }
 
     private void appending_algorithmFive(DTNHost host, DTNHost peer) {
         if (isInternet(peer)) {
+
             if (host.getSelectedLocalchain() != null) {
+                SimScenario.getInstance().localChainCount--;
                 String hash = host.getSelectedLocalchain().getHash();
                 String calculatedHash = host.getSelectedLocalchain().calculateHash();
-//                System.out.println(hash);
-//                System.out.println(calculatedHash);
 
                 if (calculatedHash.equals(hash)) {
                     peer.getMainChain().addBlockFromLocalChain(host.getSelectedLocalchain());
@@ -284,7 +286,9 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     host.setSelectedLocalchain(null);
                     System.out.println("Transaksi berhasil ditambahkan ke Blockchain!");
                 }
-
+                if (SimScenario.getInstance().localChainCount == 0) {
+                    System.out.println(peer.getMainChain());
+                }
             }
         }
     }
