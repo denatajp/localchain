@@ -1,17 +1,65 @@
 package Blockchain;
 
+import core.SimScenario;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Localchain {
+
     private List<Block> chain;
-    private final int difficulty;
+    private int difficulty;
+    private String name;
+    private String hash;
 
     public Localchain(int difficulty) {
         this.chain = new ArrayList<>();
         this.difficulty = difficulty;
         // Genesis block (blok pertama) harus ditambahkan saat blockchain dibuat
         chain.add(createGenesisBlock());
+    }
+
+//    copy constructor
+    public Localchain(Localchain other) {
+        this.chain = other.chain;
+        this.difficulty = other.difficulty;
+        this.name = other.name;
+        this.hash = other.hash;
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
+    public String calculateHash() {
+
+        String totalHash = "";
+        for (int i = 0; i < chain.size(); i++) {
+            String hash = chain.get(i).getHash();
+            totalHash = totalHash + " + " + hash;
+        }
+        StringBuilder data = new StringBuilder(totalHash);
+
+        return applySHA256(data.toString());
+    }
+
+    private String applySHA256(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                hexString.append(String.format("%02x", b));
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Block createGenesisBlock() {
@@ -23,14 +71,34 @@ public class Localchain {
     public Block getLatestBlock() {
         return chain.get(chain.size() - 1);
     }
-    
+
     public void addBlock(Block newBlock) {
-        newBlock.mineBlock(difficulty);
+//        newBlock.mineBlock(difficulty);
         chain.add(newBlock);
+    }
+
+    public int chainSize() {
+        return chain.size();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getDifficulty() {
         return difficulty;
+    }
+
+    public List<Block> getChain() {
+        return chain;
+    }
+
+    public void setChain(List<Block> chain) {
+        this.chain = chain;
     }
 
     public boolean isChainValid() {
@@ -61,5 +129,19 @@ public class Localchain {
             System.out.println("-------------------------------");
         }
     }
-}
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("================================ LOCALCHAIN ================================\n");
+        sb.append("Localchain Title  : ").append(name).append("\n");
+        sb.append("Difficulty Level  : ").append(difficulty).append("\n");
+        sb.append("Localchain Hash   : ").append(hash).append("\n");
+        for (Block block : chain) {
+            sb.append(block.toString()).append("\n");
+        }
+        sb.append("============================================================================\n");
+        return sb.toString();
+    }
+
+}

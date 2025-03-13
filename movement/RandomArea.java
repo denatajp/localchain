@@ -127,12 +127,80 @@ public class RandomArea extends MovementModel {
                 minY = 333;
                 maxY = 1000;  // Y hanya dalam batas vertikal
                 break;
+            case 10:
+                minX = 0;
+                maxX = 500;
+                minY = 0;
+                maxY = 500;
+                break;
+            case 11:
+                minX = 500;
+                maxX = 500;
+                minY = 0;
+                maxY = 500;
+                break;
+            case 12:
+                minX = 500;
+                maxX = 1000;
+                minY = 0;
+                maxY = 500;
+                break;
+            case 13:
+                minX = 0;
+                maxX = 500;
+                minY = 500;
+                maxY = 500;
+                break;
+            case 14:
+                minX = 500;
+                maxX = 1000;
+                minY = 500;
+                maxY = 500;
+                break;
+            case 15:
+                minX = 0;
+                maxX = 500;
+                minY = 500;
+                maxY = 1000;
+                break;
+            case 16:
+                minX = 500;
+                maxX = 500;
+                minY = 500;
+                maxY = 1000;
+                break;
+            case 17:
+                minX = 500;
+                maxX = 1000;
+                minY = 500;
+                maxY = 1000;
+                break;
+            case 18 : 
+                minX = 500;
+                maxX = 1200;
+                minY = 500;
+                maxY = 500;
+                break;
             default:
                 throw new IllegalArgumentException("Area harus antara 1-4 atau 6-9 (area 5 tidak bisa dipilih)");
         }
-
-        double x = minX + rng.nextDouble() * (maxX - minX);
-        double y = minY + rng.nextDouble() * (maxY - minY);
+//area diagonal case 10, 12, 15, 17
+        double x, y;
+        if (area == 10 || area == 17) {
+            x = minX + rng.nextDouble() * (maxX - minX);
+            y = x;
+        } 
+        else if (area == 12){
+            x = minX + rng.nextDouble() * (maxX - minX);
+            y = 1000 - x;
+        } else if ( area == 15) {
+            y = minY + rng.nextDouble() * (maxY - minY);
+            x = 1000 - y;
+        }
+        else {
+            x = minX + rng.nextDouble() * (maxX - minX);
+            y = minY + rng.nextDouble() * (maxY - minY);
+        }
 
         return new Coord(x, y);
     }

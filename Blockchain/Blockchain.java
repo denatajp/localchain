@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Blockchain {
+
     private List<Block> chain;
     private final int difficulty;
 
@@ -15,7 +16,9 @@ public class Blockchain {
     }
 
     private Block createGenesisBlock() {
-        return new Block("0", null, 0);
+        List<Transaction> list = new ArrayList<>();
+        list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
+        return new Block("0", list, System.currentTimeMillis());
     }
 
     public Block getLatestBlock() {
@@ -23,8 +26,27 @@ public class Blockchain {
     }
 
     public void addBlock(Block newBlock) {
-        newBlock.mineBlock(difficulty);
         chain.add(newBlock);
+    }
+
+    public void addBlockFromLocalChain(Localchain localChain) {
+        List<Block> blockFromLocalchain = new ArrayList<>(localChain.getChain());
+
+        // Ambil hash dari blok terakhir dalam blockchain utama
+        String previousHash = getLatestBlock().getHash();
+
+        // Update previousHash dari Genesis Block di Localchain
+        Block genesisBlock = blockFromLocalchain.get(0);
+        genesisBlock.setPreviousHash(previousHash);
+
+        // calculate hash semua blok di localchain agar tetap valid
+        for (Block block : blockFromLocalchain) {
+            block.recalculateHash();
+        }
+
+        for (Block block : blockFromLocalchain) {
+            addBlock(block);
+        }
     }
 
     public boolean isChainValid() {
@@ -55,5 +77,20 @@ public class Blockchain {
             System.out.println("-------------------------------");
         }
     }
-}
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("==== BLOCKCHAIN ====\n");
+
+        for (Block block : chain) {
+            sb.append("Prev Hash: ").append(block.getPreviousHash()).append("\n")
+                    .append("Hash    : ").append(block.getHash()).append("\n")
+                    .append("Mined By: ").append(block.getMinedBy() != null ? block.getMinedBy().toString() : "Unknown").append("\n")
+                    .append("-----------------------\n");
+        }
+
+        return sb.toString();
+    }
+
+}
