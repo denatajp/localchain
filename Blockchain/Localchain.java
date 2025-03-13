@@ -73,7 +73,6 @@ public class Localchain {
     }
 
     public void addBlock(Block newBlock) {
-//        newBlock.mineBlock(difficulty);
         chain.add(newBlock);
     }
 
