@@ -167,13 +167,9 @@ public class TransactionEventGenerator implements EventQueue {
      * @return A random host address
      */
     protected int drawHostAddress(int hostRange[]) {
-//                for (int i : hostRange) {
-//            System.out.println("Host range berisi demikian : "+i);
-//        }
         if (hostRange[1] == hostRange[0]) {
             return hostRange[0];
         }
-
         return hostRange[0] + rng.nextInt(hostRange[1] - hostRange[0]);
     }
 
@@ -203,19 +199,12 @@ public class TransactionEventGenerator implements EventQueue {
      * Draws a destination host address that is different from the "from"
      * address
      *
-     * @param hostRange The range of hosts
      * @param from the "from" address
      * @return a destination address from the range, but different from "from"
      */
     protected int drawToAddress(int from) {
         int to;
-////        System.out.println("Masuk ka pepe");
-////        System.out.println("Kalau masuk from = "+ from);
-//
-//        do {
-//            to = this.toHostRange != null ? drawHostAddress(this.toHostRange)
-//                    : drawHostAddress(this.hostRange);
-//        } while (from == to);
+
         if (from >= 1 && from <= 7) {
             to = 57;
         } else if (from <= 14) {
@@ -242,20 +231,19 @@ public class TransactionEventGenerator implements EventQueue {
      *
      * @see input.EventQueue#nextEvent()
      */
+    @Override
     public ExternalEvent nextEvent() {
         int responseSize = 0;
-        /* zero stands for one way messages */
         int msgSize;
         int interval;
         int from;
         int to;
 
-        /* Get two *different* nodes randomly from the host ranges */
         from = drawHostAddress(this.hostRange);
         to = drawToAddress(from);
 
         String sender = "miner" + from;
-        String[] names = Inisialisasi.names;
+        String[] names = Inisialisasi.getNames();
         String receiver = names[rng.nextInt(names.length)];
         
         double amount = ThreadLocalRandom.current().nextDouble(10, 1000);
@@ -266,9 +254,8 @@ public class TransactionEventGenerator implements EventQueue {
 
         Transaction tr = new Transaction(sender, receiver, amount, timestamp, amount);
         
-        /* Create event and advance to next event */
-             
-        TransactionCreateEvent tce = new TransactionCreateEvent(from, to, "TRX" + eventCount++, msgSize, responseSize, this.nextEventsTime, tr);
+        TransactionCreateEvent tce = new TransactionCreateEvent(from, to, "TRX" + eventCount++,
+                msgSize, responseSize, this.nextEventsTime, tr);
         
         this.nextEventsTime += interval;
 
@@ -285,6 +272,7 @@ public class TransactionEventGenerator implements EventQueue {
      *
      * @see input.EventQueue#nextEventsTime()
      */
+    @Override
     public double nextEventsTime() {
         return this.nextEventsTime;
     }

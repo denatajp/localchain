@@ -1,5 +1,6 @@
 package Blockchain;
 
+import core.SimScenario;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,11 +14,6 @@ public class Blockchain {
         this.difficulty = difficulty;
     }
 
-//    private Block createGenesisBlock() {
-//        List<Transaction> list = new ArrayList<>();
-//        list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
-//        return new Block("0", list, System.currentTimeMillis());
-//    }
     public Block getLatestBlock() {
         if (chain.isEmpty()) {
             return new Block();
@@ -35,7 +31,7 @@ public class Blockchain {
         for (Block b : blockFromLocalchain) {
             String previousHash = getLatestBlock().getHash();
             b.setPreviousHash(previousHash);
-            b.recalculateHash();
+            b.recalculateHash(difficulty);
             addBlock(b);
         }
     }

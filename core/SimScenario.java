@@ -332,6 +332,10 @@ public class SimScenario implements Serializable {
         return worldSizeY;
     }
 
+    public int getDifficulty() {
+        return difficulty;
+    }
+
     /**
      * Returns simulation's end time
      *

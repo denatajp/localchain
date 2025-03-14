@@ -26,8 +26,8 @@ public class Block {
         this.transactions = transactions;
         this.timestamp = timestamp;
         this.nonce = 0;
-        this.blockHash = calculateHash();
         this.intervalMining = 0;
+        this.blockHash = calculateHash();
     }
 
     public Block(Block other) {
@@ -57,8 +57,10 @@ public class Block {
         return applySHA256(data.toString());
     }
 
-    public void recalculateHash() {
-        this.blockHash = calculateHash();
+    public void recalculateHash(int difficulty) {
+        this.nonce = 0; // Reset nonce
+        this.blockHash = calculateHash(); // Hitung hash awal
+        mineBlock(difficulty);
     }
 
     public void setBlockHash(String blockHash) {
