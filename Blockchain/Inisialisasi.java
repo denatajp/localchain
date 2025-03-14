@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Inisialisasi {
 
-    private static final String[] names = {
+    public static final String[] names = {
         "Halie Fierro", "Garett Kirkland", "Lina Wilks", "Gannon Blair", "Shawn McAdams",
         "Grayson Yazzie", "Dayanara Roark", "Julieta Rushing", "Lena Hoffmann", "Nicklaus Delossantos",
         "Marlena Rinehart", "Mason Lofton", "Dequan Lawson", "Celina Donnelly", "Luna Birch",

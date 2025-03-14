@@ -18,6 +18,7 @@ public class Block {
     private double fee;
 
     public Block() {
+        this.previousHash = "0";
     }
 
     public Block(String previousHash, List<Transaction> transactions, long timestamp) {
@@ -58,6 +59,10 @@ public class Block {
 
     public void recalculateHash() {
         this.blockHash = calculateHash();
+    }
+
+    public void setBlockHash(String blockHash) {
+        this.blockHash = blockHash;
     }
 
     public void mineBlock(int difficulty) {

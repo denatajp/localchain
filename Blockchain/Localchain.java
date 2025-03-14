@@ -16,8 +16,6 @@ public class Localchain {
     public Localchain(int difficulty) {
         this.chain = new ArrayList<>();
         this.difficulty = difficulty;
-        // Genesis block (blok pertama) harus ditambahkan saat blockchain dibuat
-        chain.add(createGenesisBlock());
     }
 
 //    copy constructor
@@ -62,18 +60,25 @@ public class Localchain {
         }
     }
 
-    private Block createGenesisBlock() {
-        List<Transaction> list = new ArrayList<>();
-        list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
-        return new Block("0", list, System.currentTimeMillis());
-    }
+  
 
     public Block getLatestBlock() {
+        if (chain.isEmpty()) {
+                return new Block();
+        }
         return chain.get(chain.size() - 1);
     }
 
     public void addBlock(Block newBlock) {
-        chain.add(newBlock);
+        if (chain.isEmpty()) {
+            newBlock.setPreviousHash("0");
+            chain.add(newBlock);
+        }
+        else{
+            newBlock.setPreviousHash(getLatestBlock().getHash());
+            chain.add(newBlock);
+        }
+        
     }
 
     public int chainSize() {

@@ -11,17 +11,17 @@ public class Blockchain {
     public Blockchain(int difficulty) {
         this.chain = new ArrayList<>();
         this.difficulty = difficulty;
-        // Genesis block (blok pertama) harus ditambahkan saat blockchain dibuat
-        chain.add(createGenesisBlock());
     }
 
-    private Block createGenesisBlock() {
-        List<Transaction> list = new ArrayList<>();
-        list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
-        return new Block("0", list, System.currentTimeMillis());
-    }
-
+//    private Block createGenesisBlock() {
+//        List<Transaction> list = new ArrayList<>();
+//        list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
+//        return new Block("0", list, System.currentTimeMillis());
+//    }
     public Block getLatestBlock() {
+        if (chain.isEmpty()) {
+            return new Block();
+        }
         return chain.get(chain.size() - 1);
     }
 
@@ -32,20 +32,11 @@ public class Blockchain {
     public void addBlockFromLocalChain(Localchain localChain) {
         List<Block> blockFromLocalchain = new ArrayList<>(localChain.getChain());
 
-        // Ambil hash dari blok terakhir dalam blockchain utama
-        String previousHash = getLatestBlock().getHash();
-
-        // Update previousHash dari Genesis Block di Localchain
-        Block genesisBlock = blockFromLocalchain.get(0);
-        genesisBlock.setPreviousHash(previousHash);
-
-        // calculate hash semua blok di localchain agar tetap valid
-        for (Block block : blockFromLocalchain) {
-            block.recalculateHash();
-        }
-
-        for (Block block : blockFromLocalchain) {
-            addBlock(block);
+        for (Block b : blockFromLocalchain) {
+            String previousHash = getLatestBlock().getHash();
+            b.setPreviousHash(previousHash);
+            b.recalculateHash();
+            addBlock(b);
         }
     }
 

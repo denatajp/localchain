@@ -7,6 +7,7 @@ import core.Connection;
 import core.DTNHost;
 import core.Message;
 import core.Settings;
+import core.SimClock;
 import core.SimScenario;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -63,7 +64,9 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     @Override
     public void doExchangeForNewConnection(Connection con, DTNHost peer) {
         DTNHost host = con.getOtherNode(peer);
-
+        if (SimClock.getTime() >= 10000) {
+            
+        
         if (isOperatorProxy(host)) {
 
             /*
@@ -74,7 +77,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
             terisi, proses selanjutnya yaitu memverifikasi blok.
              */
             mining_algorithmOne(host, peer);
-
+            System.out.println("Mining");
             /*
              * Setelah memilih blok terbaik, operator proxy kembali membagikan
             hasil blok terbaik tersebut kepada miner untuk diverifikasi, hasil
@@ -107,6 +110,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
         if (isCollector(host)) {
             appending_algorithmFive(host, peer);
+        }
         }
     }
 
@@ -358,7 +362,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean newMessage(Message m) {
-        return false;
+        return true;
     }
 
     @Override
@@ -368,9 +372,22 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean shouldSaveReceivedMessage(Message m, DTNHost thisHost) {
+        if (isOperatorProxy(thisHost)) {
+            Transaction trx = (Transaction) m.getProperty("transaction");
+            if (trx != null) {
+               addTransactionToTrxList(thisHost,trx);
+            }
+        }
         return !thisHost.getRouter().hasMessage(m.getId());
     }
-
+    private void addTransactionToTrxList(DTNHost host, Transaction trx){
+        List<List<Transaction>> trxList = host.getTrx();
+        if (trxList.isEmpty()) {
+            trxList.add(new ArrayList<>());
+        }
+        trxList.get(0).add(trx);
+        System.out.println("Operator Proxy "+host + "menerima transaksi : "+ trx);
+    }
     @Override
     public boolean shouldSendMessageToHost(Message m, DTNHost otherHost, DTNHost thisHost) {
         return true;
