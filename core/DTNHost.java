@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import movement.MovementModel;
@@ -44,12 +45,17 @@ public class DTNHost implements Comparable<DTNHost> {
     private ModuleCommunicationBus comBus;
 
     /* ---------------------- FIELD OPERATOR PROXY ------------------- */
+    private List<Transaction> transactionBuffer;
     private List<List<Transaction>> trx;
     private Set<DTNHost> visitedMiner;
     private Block selectedBlock;
     private int v;
     private Localchain localchain;
     private boolean readyToStore;
+    private static final int MIN_PACKET_SIZE = 5; // Ukuran minimal paket
+    private static final int MAX_PACKET_SIZE = 8; // Ukuran maksimal paket
+    private Random random; // Untuk menghasilkan ukuran paket acak
+    private boolean hasGrouped;
     /* --------------------------------------------------------------- */
 
     /* ----------------------- FIELD HOME ---------------------------- */
@@ -117,8 +123,12 @@ public class DTNHost implements Comparable<DTNHost> {
 
         // HASHSET UNTUK MENANDAKAN MINER SUDAH DIKUNJUNGI
         if (this.name.startsWith("ope")) {
+            this.trx = new ArrayList<>();
+            this.transactionBuffer = new ArrayList<>();
             this.visitedMiner = new HashSet<>();
             this.v = 0;
+            this.random = new Random();
+            this.hasGrouped = false;
         }
 
         if (this.name.startsWith("hom")) {
@@ -154,6 +164,47 @@ public class DTNHost implements Comparable<DTNHost> {
         }
     }
 
+    public List<Transaction> getTransactionBuffer() {
+        return transactionBuffer;
+    }
+
+    public void setTransactionBuffer(List<Transaction> transactionBuffer) {
+        this.transactionBuffer = transactionBuffer;
+    }
+
+    public void addTransactionToBuffer(Transaction trx) {
+        transactionBuffer.add(trx);
+
+//        System.out.println(name);
+        
+        if (SimClock.getTime() > 9000 && SimClock.getTime() < 20000) { //ope 7 selesai bungkus di 20000 ms
+            groupTransactions();
+        }
+    }
+    
+    public void groupTransactions() {
+        if (!hasGrouped) {
+            while (!transactionBuffer.isEmpty()) {
+                // Tentukan ukuran paket secara acak
+                int packetSize = random.nextInt(MAX_PACKET_SIZE - MIN_PACKET_SIZE + 1) + MIN_PACKET_SIZE;
+                
+                packetSize = Math.min(packetSize, transactionBuffer.size()); // Pastikan tidak melebihi jumlah transaksi yang ada
+
+                // Buat paket transaksi
+                List<Transaction> packet = new ArrayList<>();
+                for (int i = 0; i < packetSize; i++) {
+                    packet.add(transactionBuffer.remove(0)); // Ambil transaksi dari buffer
+                }
+
+                // Tambahkan paket ke daftar paket transaksi
+                trx.add(packet);
+            }
+
+            System.out.println("Semua transaksi telah dikelompokkan di " + name);
+            this.hasGrouped = true;
+        }
+    }
+    
     public boolean isReadyToStore() {
         return readyToStore;
     }

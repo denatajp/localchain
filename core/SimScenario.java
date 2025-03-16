@@ -530,8 +530,8 @@ public class SimScenario implements Serializable {
                         mmProto, mRouterProto);
 
                 if (isOperatorProxy(host)) {
-                    List<List<Transaction>> list = Inisialisasi.inisialisasi(this.transaksiAwal);
-                    host.setTrx(list);
+//                    List<List<Transaction>> list = Inisialisasi.inisialisasi(this.transaksiAwal);
+//                    host.setTrx(list);
                     host.setLocalchain(new Localchain(this.difficulty));
                     host.getLocalchain().setName("Localchain " + host.toString());
                 }
@@ -548,22 +548,6 @@ public class SimScenario implements Serializable {
 
     private boolean isOperatorProxy(DTNHost host) {
         return host.toString().startsWith("ope");
-    }
-
-    private boolean isMiner(DTNHost host) {
-        return host.toString().startsWith("min");
-    }
-
-    private boolean isHome(DTNHost host) {
-        return host.toString().startsWith("home");
-    }
-
-    private boolean isCollector(DTNHost host) {
-        return host.toString().startsWith("col");
-    }
-
-    private boolean isInternet(DTNHost host) {
-        return host.toString().startsWith("internet");
     }
 
     /**

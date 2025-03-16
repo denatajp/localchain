@@ -65,17 +65,24 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         DTNHost host = con.getOtherNode(peer);
 
         /*
+        Ada waktu 20000 ms untuk melakukan inisialisasi awal terlebih dahulu.
         Di sini kami berasumsi bahwa 10000 ms pertama dilakukan para miner
         untuk melakukan/membangkitkan transaksi. Transaksi akan dibungkus
         ke dalam message, dan destinasi hanya akan ke Operator Proxy dari setiap
-        area. Setelah 10000, maka transaksi-transaksi ini akan dikumpulkan untuk
-        nanti dilakukan proses mining oleh para miner
+        area. Lalu setelah 10000 ms berikutnya, maka transaksi-transaksi ini 
+        akan dikumpulkan dan dibuat grup untuk nanti dilakukan proses mining 
+        oleh para miner
          */
-        if (SimClock.getTime() >= 10000) {
+        if (SimClock.getTime() >= 20000) {
 
             /*
                 Mining dilakukan oleh Operator proxy dan Miner dengan cara
-                membagikan list transaksi ke para miner di area tersebut, tujuannya
+                membagikan list transaksi berisikian transaksi-transaksi yang
+                sudah dibuat miner tadi ke para miner di area tersebut. Lalu para
+                miner akan membungkus ke dalam satu blok dengan nonce masih 0,
+                dan pada proses ini miner-miner akan mencari nilai nonce sehingga
+                hash dapat mencapai tingkut difficulty yang sudah diatur, masing-
+                masing miner akan dicatat waktu durasi mining mereka, tujuannya
                 untuk memilih blok terbaik dengan interval waktu mining tercepat, 
                 lalu akan disimpan ke dalam selectedBlock. Saat selectedBlock
                 terisi, proses selanjutnya yaitu memverifikasi blok.
@@ -439,19 +446,14 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         if (isOperatorProxy(thisHost)) {
             Transaction trx = (Transaction) m.getProperty("transaction");
             if (trx != null) {
-                addTransactionToTrxList(thisHost, trx);
+                addTransactionToBuffer(thisHost, trx);
             }
         }
         return !thisHost.getRouter().hasMessage(m.getId());
     }
 
-    private void addTransactionToTrxList(DTNHost host, Transaction trx) {
-        List<List<Transaction>> trxList = host.getTrx();
-        if (trxList.isEmpty()) {
-            trxList.add(new ArrayList<>());
-        }
-        trxList.get(0).add(trx);
-//        System.out.println("Operator Proxy " + host + "menerima transaksi : \n" + trx);
+    private void addTransactionToBuffer(DTNHost host, Transaction trx) {
+        host.addTransactionToBuffer(trx);
     }
 
     @Override

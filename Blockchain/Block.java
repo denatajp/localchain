@@ -58,9 +58,22 @@ public class Block {
     }
 
     public void recalculateHash(int difficulty) {
-        this.nonce = 0; // Reset nonce
-        this.blockHash = calculateHash(); // Hitung hash awal
-        mineBlock(difficulty);
+        String newHash = calculateHash();
+
+        // Cek apakah hash yang dihasilkan memenuhi kriteria difficulty
+        if (isHashValid(newHash, difficulty)) {
+            this.blockHash = newHash;
+            
+        } else {
+            // Jika tidak valid, lakukan mining ulang
+            this.nonce = 0; // Reset nonce
+            mineBlock(difficulty); // Lakukan mining ulang
+        }
+    }
+
+    private boolean isHashValid(String hash, int difficulty) {
+        String target = repeatZero(difficulty); // Buat target dengan jumlah 0 di awal
+        return hash.substring(0, difficulty).equals(target);
     }
 
     public void setBlockHash(String blockHash) {
@@ -73,7 +86,6 @@ public class Block {
             nonce++;
             blockHash = calculateHash();
         }
-//        System.out.println("Block Mined: " + blockHash);
     }
 
     private String repeatZero(int count) {
