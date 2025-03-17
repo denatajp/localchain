@@ -44,13 +44,16 @@ public class TransactionCreateEvent extends MessageEvent {
     public void processEvent(World world) {
         DTNHost to = world.getNodeByAddress(this.toAddr);
         DTNHost from = world.getNodeByAddress(this.fromAddr);
-
+        
         Message m = new Message(from, to, this.id, this.size);
         m.setResponseSize(this.responseSize);
         if (this.tr != null) {
             m.addProperty("transaction", this.tr);
         }
-        from.createNewMessage(m);
+        if (this.fromAddr != 0 && this.fromAddr <57 ) {
+            from.createNewMessage(m);
+        }
+        
     }
 
     public Transaction getTransaction() {

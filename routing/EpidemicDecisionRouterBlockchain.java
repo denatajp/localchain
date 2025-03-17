@@ -449,6 +449,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 addTransactionToBuffer(thisHost, trx);
             }
         }
+
         return !thisHost.getRouter().hasMessage(m.getId());
     }
 
@@ -458,6 +459,9 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean shouldSendMessageToHost(Message m, DTNHost otherHost, DTNHost thisHost) {
+        if (isMiner(thisHost) && isCollector(otherHost)) {
+            return false;
+        }
         return true;
     }
 
