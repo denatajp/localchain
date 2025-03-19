@@ -458,6 +458,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean shouldSendMessageToHost(Message m, DTNHost otherHost, DTNHost thisHost) {
+<<<<<<< HEAD
         if (isMiner(thisHost) && isOperatorProxy(otherHost)) {
             return true;
         }
@@ -471,11 +472,18 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 //            return false;
 //        }
         return false;
+=======
+//        if (isMiner(thisHost) && isCollector(otherHost)) {
+//            return false;
+//        }
+//        return true;
+        return isMiner(thisHost) && (isOperatorProxy(otherHost) || isMiner(otherHost));
+>>>>>>> 7c57ffc012402b1475120a7f3520eb22563786d8
     }
 
     @Override
     public boolean shouldDeleteSentMessage(Message m, DTNHost otherHost) {
-        return false;
+        return true;
     }
 
     @Override
