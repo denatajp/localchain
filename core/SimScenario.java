@@ -4,6 +4,8 @@
  */
 package core;
 
+import Blockchain.Blockchain;
+import Blockchain.Inisialisasi;
 import Blockchain.Localchain;
 import Blockchain.Transaction;
 import input.EventQueue;
@@ -11,7 +13,10 @@ import input.EventQueueHandler;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import movement.MapBasedMovement;
 import movement.MovementModel;
@@ -34,7 +39,6 @@ public class SimScenario implements Serializable {
 
     public static final String TRANSAKSI_AWAL = "transaksiAwal";
     public static final String DIFFICULTY = "difficulty";
-    public static final Map <Localchain,DTNHost> localChains = new HashMap<>();
     /**
      * namespace of scenario settings ({@value})
      */
@@ -146,10 +150,9 @@ public class SimScenario implements Serializable {
      */
     private static final String APP_PACKAGE = "applications.";
 
-    
     private int transaksiAwal;
     private int difficulty;
-    
+    public int localChainCount = 8;
     /**
      * The world instance
      */
@@ -244,7 +247,7 @@ public class SimScenario implements Serializable {
         this.endTime = s.getDouble(END_TIME_S);
         this.updateInterval = s.getDouble(UP_INT_S);
         this.simulateConnections = s.getBoolean(SIM_CON_S);
-        
+
         this.transaksiAwal = s.getInt(TRANSAKSI_AWAL);
         this.difficulty = s.getInt(DIFFICULTY);
 
@@ -333,6 +336,10 @@ public class SimScenario implements Serializable {
      */
     public int getWorldSizeY() {
         return worldSizeY;
+    }
+
+    public int getDifficulty() {
+        return difficulty;
     }
 
     /**
@@ -529,30 +536,24 @@ public class SimScenario implements Serializable {
                         mmProto, mRouterProto);
 
                 if (isOperatorProxy(host)) {
-                    List<List<Transaction>> list = Blockchain.Inisialisasi.inisialisasi(this.transaksiAwal);
-                    host.setTrx(list);
+//                    List<List<Transaction>> list = Inisialisasi.inisialisasi(this.transaksiAwal);
+//                    host.setTrx(list);
                     host.setLocalchain(new Localchain(this.difficulty));
+                    host.getLocalchain().setName("Localchain " + host.toString());
                 }
-
+                
+                if (host.toString().startsWith("int")) {
+                    Blockchain existingBlockchain = new Blockchain(this.difficulty);
+                    host.setMainChain(existingBlockchain);
+                }
                 hosts.add(host);
             }
+
         }
     }
 
     private boolean isOperatorProxy(DTNHost host) {
         return host.toString().startsWith("ope");
-    }
-
-    private boolean isMiner(DTNHost host) {
-        return host.toString().startsWith("min");
-    }
-
-    private boolean isHome(DTNHost host) {
-        return host.toString().startsWith("home");
-    }
-
-    private boolean isCollector(DTNHost host) {
-        return host.toString().startsWith("col");
     }
 
     /**

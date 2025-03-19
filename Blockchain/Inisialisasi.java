@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Inisialisasi {
 
-    private static final String[] names = {
+    public static final String[] names = {
         "Halie Fierro", "Garett Kirkland", "Lina Wilks", "Gannon Blair", "Shawn McAdams",
         "Grayson Yazzie", "Dayanara Roark", "Julieta Rushing", "Lena Hoffmann", "Nicklaus Delossantos",
         "Marlena Rinehart", "Mason Lofton", "Dequan Lawson", "Celina Donnelly", "Luna Birch",
@@ -51,6 +51,10 @@ public class Inisialisasi {
         "Enoch Martel", "Jessie Alderman", "Branden Ashby", "Aysha Giordano", "Brett Jacob"
     };
 
+    public static String[] getNames(){
+        return names;
+    }
+    
     public static List<List<Transaction>> inisialisasi(int jumlahTransaksi) {
         List<List<Transaction>> listTransaksi = new ArrayList<>();
         for (int i = 0; i < jumlahTransaksi; i++) {

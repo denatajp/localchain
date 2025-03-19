@@ -5,6 +5,7 @@
 package core;
 
 import Blockchain.Block;
+import Blockchain.Blockchain;
 import Blockchain.Localchain;
 import Blockchain.Transaction;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import movement.MovementModel;
@@ -42,11 +44,50 @@ public class DTNHost implements Comparable<DTNHost> {
     private List<NetworkInterface> net;
     private ModuleCommunicationBus comBus;
 
+    /* ---------------------- FIELD OPERATOR PROXY ------------------- */
+    private List<Transaction> transactionBuffer;
     private List<List<Transaction>> trx;
-    private Localchain localchain;
+    private Set<DTNHost> visitedMiner;
     private Block selectedBlock;
-    private Map<DTNHost, Long> visitedMiner;
-    private int v=0;
+    private int v;
+    private Localchain localchain;
+    private boolean readyToStore;
+    private static final int MIN_PACKET_SIZE = 5; // Ukuran minimal paket
+    private static final int MAX_PACKET_SIZE = 8; // Ukuran maksimal paket
+    private Random random; // Untuk menghasilkan ukuran paket acak
+    private boolean hasGrouped;
+    /* --------------------------------------------------------------- */
+
+    /* ----------------------- FIELD HOME ---------------------------- */
+    private List<Localchain> storedLocalchains;
+    private Set<DTNHost> visitedOperatorProxy;
+    /* --------------------------------------------------------------- */
+    
+    /* ----------------------- FIELD COLLECTOR ----------------------- */
+    private List<Localchain> completedLocalchains;
+    private Localchain selectedLocalchain;
+    /* --------------------------------------------------------------- */
+    
+     /* ----------------------- FIELD INTERNET ----------------------- */
+    private Blockchain mainChain;
+    /* --------------------------------------------------------------- */
+
+    public Blockchain getMainChain() {
+        return mainChain;
+    }
+
+    public void setMainChain(Blockchain mainChain) {
+        this.mainChain = mainChain;
+    }
+    
+    public Localchain getSelectedLocalchain() {
+        return selectedLocalchain;
+    }
+
+    public void setSelectedLocalchain(Localchain selectedLocalchain) {
+        this.selectedLocalchain = selectedLocalchain;
+    }
+
     static {
         DTNSim.registerForReset(DTNHost.class.getCanonicalName());
         reset();
@@ -82,9 +123,25 @@ public class DTNHost implements Comparable<DTNHost> {
 
         // HASHSET UNTUK MENANDAKAN MINER SUDAH DIKUNJUNGI
         if (this.name.startsWith("ope")) {
-            this.visitedMiner = new HashMap<>();    
+            this.trx = new ArrayList<>();
+            this.transactionBuffer = new ArrayList<>();
+            this.visitedMiner = new HashSet<>();
+            this.v = 0;
+            this.random = new Random();
+            this.hasGrouped = false;
         }
-        
+
+        if (this.name.startsWith("hom")) {
+            this.storedLocalchains = new ArrayList<>();
+            this.visitedOperatorProxy = new HashSet<>();
+            this.readyToStore = false;
+        }
+
+        if (this.name.startsWith("col")) {
+            this.completedLocalchains = new ArrayList<>();
+            
+        }
+
         // TODO - think about the names of the interfaces and the nodes
         //this.name = groupId + ((NetworkInterface)net.get(1)).getAddress();
         this.msgListeners = msgLs;
@@ -105,6 +162,67 @@ public class DTNHost implements Comparable<DTNHost> {
                 l.initialLocation(this, this.location);
             }
         }
+    }
+
+    public List<Transaction> getTransactionBuffer() {
+        return transactionBuffer;
+    }
+
+    public void setTransactionBuffer(List<Transaction> transactionBuffer) {
+        this.transactionBuffer = transactionBuffer;
+    }
+
+    public void addTransactionToBuffer(Transaction trx) {
+        transactionBuffer.add(trx);
+
+//        System.out.println(name);
+        
+        if (SimClock.getTime() > 9000 && SimClock.getTime() < 20000) { //ope 7 selesai bungkus di 20000 ms
+            groupTransactions();
+        }
+    }
+    
+    public void groupTransactions() {
+        if (!hasGrouped) {
+            while (!transactionBuffer.isEmpty()) {
+                // Tentukan ukuran paket secara acak
+                int packetSize = random.nextInt(MAX_PACKET_SIZE - MIN_PACKET_SIZE + 1) + MIN_PACKET_SIZE;
+                
+                packetSize = Math.min(packetSize, transactionBuffer.size()); // Pastikan tidak melebihi jumlah transaksi yang ada
+
+                // Buat paket transaksi
+                List<Transaction> packet = new ArrayList<>();
+                for (int i = 0; i < packetSize; i++) {
+                    packet.add(transactionBuffer.remove(0)); // Ambil transaksi dari buffer
+                }
+
+                // Tambahkan paket ke daftar paket transaksi
+                trx.add(packet);
+            }
+
+            System.out.println("Semua transaksi telah dikelompokkan di " + name);
+            this.hasGrouped = true;
+        }
+    }
+    
+    public boolean isReadyToStore() {
+        return readyToStore;
+    }
+
+    public void setReadyToStore(boolean readyToStore) {
+        this.readyToStore = readyToStore;
+    }
+
+    public List<Localchain> getStoredLocalchains() {
+        return storedLocalchains;
+    }
+
+    public Set<DTNHost> getVisitedOperatorProxy() {
+        return visitedOperatorProxy;
+    }
+
+    public List<Localchain> getCompletedLocalchains() {
+        return completedLocalchains;
     }
 
     public int getV() {
@@ -139,16 +257,14 @@ public class DTNHost implements Comparable<DTNHost> {
         this.localchain = localchain;
     }
 
-    public Map<DTNHost, Long> getVisitedMiner() {
+    public Set<DTNHost> getVisitedMiner() {
         return visitedMiner;
     }
 
-    public void setVisitedMiner(Map<DTNHost, Long> visitedMiner) {
+    public void setVisitedMiner(Set <DTNHost> visitedMiner) {
         this.visitedMiner = visitedMiner;
     }
 
-
-    
     /**
      * Returns a new network interface address and increments the address for
      * subsequent calls.

@@ -1,47 +1,110 @@
 package Blockchain;
 
+import core.SimScenario;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Localchain {
 
     private List<Block> chain;
-    private final int difficulty;
-    private int idLocachain;
-    
+    private int difficulty;
+    private String name;
+    private String hash;
+
 
     public Localchain(int difficulty) {
         this.chain = new ArrayList<>();
         this.difficulty = difficulty;
-        // Genesis block (blok pertama) harus ditambahkan saat blockchain dibuat
-        chain.add(createGenesisBlock());
     }
 
-    private Block createGenesisBlock() {
-        List<Transaction> list = new ArrayList<>();
-        list.add(new Transaction("Bellen", "Maria", 10, System.currentTimeMillis(), 0.5));
-        return new Block("0", list, System.currentTimeMillis());
+//    copy constructor
+    public Localchain(Localchain other) {
+        this.chain = other.chain;
+        this.difficulty = other.difficulty;
+        this.name = other.name;
+        this.hash = other.hash;
     }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
+    public String calculateHash() {
+
+        String totalHash = "";
+        for (int i = 0; i < chain.size(); i++) {
+            String hash = chain.get(i).getHash();
+            totalHash = totalHash + " + " + hash;
+        }
+        StringBuilder data = new StringBuilder(totalHash);
+
+        return applySHA256(data.toString());
+    }
+
+    private String applySHA256(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                hexString.append(String.format("%02x", b));
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+  
 
     public Block getLatestBlock() {
+        if (chain.isEmpty()) {
+                return new Block();
+        }
         return chain.get(chain.size() - 1);
     }
 
     public void addBlock(Block newBlock) {
-        newBlock.mineBlock(difficulty);
-        chain.add(newBlock);
+        if (chain.isEmpty()) {
+            newBlock.setPreviousHash("0");
+            chain.add(newBlock);
+        }
+        else{
+            newBlock.setPreviousHash(getLatestBlock().getHash());
+            chain.add(newBlock);
+        }
+        
+    }
+
+    public int chainSize() {
+        return chain.size();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getDifficulty() {
         return difficulty;
     }
 
-    public int getIdLocachain() {
-        return idLocachain;
+
+    public List<Block> getChain() {
+        return chain;
     }
 
-    public void setIdLocachain(int idLocachain) {
-        this.idLocachain = idLocachain;
+    public void setChain(List<Block> chain) {
+        this.chain = chain;
     }
 
     public boolean isChainValid() {
@@ -76,9 +139,11 @@ public class Localchain {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("================================ BLOCKCHAIN ================================\n");
-        sb.append("Blockchain Title  : Localchain ").append(idLocachain).append("\n");
-        sb.append("Difficulty Level  : ").append(difficulty).append("\n\n");
+        sb.append("================================ LOCALCHAIN ================================\n");
+        sb.append("Localchain Title  : ").append(name).append("\n");
+        sb.append("Difficulty Level  : ").append(difficulty).append("\n");
+        sb.append("Localchain Hash   : ").append(hash).append("\n");
+
         for (Block block : chain) {
             sb.append(block.toString()).append("\n");
         }

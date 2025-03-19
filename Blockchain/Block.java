@@ -17,12 +17,8 @@ public class Block {
     private DTNHost minedBy;
     private double fee;
 
-    public long getIntervalMining() {
-        return intervalMining;
-    }
-
-    public void setIntervalMining(long intervalMining) {
-        this.intervalMining = intervalMining;
+    public Block() {
+        this.previousHash = "0";
     }
 
     public Block(String previousHash, List<Transaction> transactions, long timestamp) {
@@ -30,8 +26,8 @@ public class Block {
         this.transactions = transactions;
         this.timestamp = timestamp;
         this.nonce = 0;
-        this.blockHash = calculateHash();
         this.intervalMining = 0;
+        this.blockHash = calculateHash();
     }
 
     public Block(Block other) {
@@ -45,6 +41,14 @@ public class Block {
         this.minedBy = other.minedBy;
     }
 
+    public long getIntervalMining() {
+        return intervalMining;
+    }
+
+    public void setIntervalMining(long intervalMining) {
+        this.intervalMining = intervalMining;
+    }
+
     public String calculateHash() {
         StringBuilder data = new StringBuilder(previousHash + timestamp + nonce);
         for (Transaction tx : transactions) {
@@ -53,13 +57,35 @@ public class Block {
         return applySHA256(data.toString());
     }
 
+    public void recalculateHash(int difficulty) {
+        String newHash = calculateHash();
+
+        // Cek apakah hash yang dihasilkan memenuhi kriteria difficulty
+        if (isHashValid(newHash, difficulty)) {
+            this.blockHash = newHash;
+            
+        } else {
+            // Jika tidak valid, lakukan mining ulang
+            this.nonce = 0; // Reset nonce
+            mineBlock(difficulty); // Lakukan mining ulang
+        }
+    }
+
+    private boolean isHashValid(String hash, int difficulty) {
+        String target = repeatZero(difficulty); // Buat target dengan jumlah 0 di awal
+        return hash.substring(0, difficulty).equals(target);
+    }
+
+    public void setBlockHash(String blockHash) {
+        this.blockHash = blockHash;
+    }
+
     public void mineBlock(int difficulty) {
         String target = repeatZero(difficulty);
         while (!blockHash.substring(0, difficulty).equals(target)) {
             nonce++;
             blockHash = calculateHash();
         }
-//        System.out.println("Block Mined: " + blockHash);
     }
 
     private String repeatZero(int count) {
@@ -88,6 +114,10 @@ public class Block {
         return blockHash;
     }
 
+    public void setPreviousHash(String previousHash) {
+        this.previousHash = previousHash;
+    }
+
     public String getPreviousHash() {
         return previousHash;
     }
@@ -108,8 +138,6 @@ public class Block {
         this.fee = fee;
     }
 
-    
-    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

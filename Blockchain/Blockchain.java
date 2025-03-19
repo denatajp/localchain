@@ -1,30 +1,39 @@
 package Blockchain;
 
+import core.SimScenario;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Blockchain {
+
     private List<Block> chain;
     private final int difficulty;
 
     public Blockchain(int difficulty) {
         this.chain = new ArrayList<>();
         this.difficulty = difficulty;
-        // Genesis block (blok pertama) harus ditambahkan saat blockchain dibuat
-        chain.add(createGenesisBlock());
-    }
-
-    private Block createGenesisBlock() {
-        return new Block("0", null, 0);
     }
 
     public Block getLatestBlock() {
+        if (chain.isEmpty()) {
+            return new Block();
+        }
         return chain.get(chain.size() - 1);
     }
 
     public void addBlock(Block newBlock) {
-        newBlock.mineBlock(difficulty);
         chain.add(newBlock);
+    }
+
+    public void addBlockFromLocalChain(Localchain localChain) {
+        List<Block> blockFromLocalchain = new ArrayList<>(localChain.getChain());
+
+        for (Block b : blockFromLocalchain) {
+            String previousHash = getLatestBlock().getHash();
+            b.setPreviousHash(previousHash);
+            b.recalculateHash(difficulty);
+            addBlock(b);
+        }
     }
 
     public boolean isChainValid() {
@@ -55,5 +64,20 @@ public class Blockchain {
             System.out.println("-------------------------------");
         }
     }
-}
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("==== BLOCKCHAIN ====\n");
+
+        for (Block block : chain) {
+            sb.append("Prev Hash: ").append(block.getPreviousHash()).append("\n")
+                    .append("Hash    : ").append(block.getHash()).append("\n")
+                    .append("Mined By: ").append(block.getMinedBy() != null ? block.getMinedBy().toString() : "Unknown").append("\n")
+                    .append("-----------------------\n");
+        }
+
+        return sb.toString();
+    }
+
+}
