@@ -10,6 +10,7 @@ import core.Settings;
 import core.SimClock;
 import core.SimScenario;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     /**
      * For Report purpose, maybe needed some variable
      */
-    protected LinkedList<Double> resourcesList;
+    protected LinkedList<Double> resourcesList; 
     public static final String TOTAL_CONTACT_INTERVAL = "perTotalContact";
     public static final int DEFAULT_CONTACT_INTERVAL = 300;
     private static final String THRESHOLD = "threshold";
@@ -133,7 +134,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 ke blockchain utama
              */
             appending_algorithmFive(host, peer);
-
         }
     }
 
@@ -160,6 +160,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                     if (!host.getVisitedMiner().contains(peer)) { // jika baru pertama kali bertemu
 
+
                         host.getVisitedMiner().add(peer);
 
                         int indexBestTRX = getBestTranx(trx);
@@ -171,7 +172,9 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                         long begin = System.currentTimeMillis();
 
+
                         b.mineBlock(localChain.getDifficulty());
+
 
                         long end = System.currentTimeMillis();
                         long time = end - begin;
@@ -366,7 +369,8 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 }
             }
         }
-    }
+
+   } 
 
     /**
      * Finds the index of the transaction list with the highest total amount.

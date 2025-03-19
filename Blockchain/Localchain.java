@@ -13,6 +13,7 @@ public class Localchain {
     private String name;
     private String hash;
 
+
     public Localchain(int difficulty) {
         this.chain = new ArrayList<>();
         this.difficulty = difficulty;
@@ -97,6 +98,7 @@ public class Localchain {
         return difficulty;
     }
 
+
     public List<Block> getChain() {
         return chain;
     }
@@ -141,6 +143,7 @@ public class Localchain {
         sb.append("Localchain Title  : ").append(name).append("\n");
         sb.append("Difficulty Level  : ").append(difficulty).append("\n");
         sb.append("Localchain Hash   : ").append(hash).append("\n");
+
         for (Block block : chain) {
             sb.append(block.toString()).append("\n");
         }

@@ -141,7 +141,7 @@ public class Block {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("======================================"
+        sb.append("====================================== "
                 + "BLOCK "
                 + "======================================\n")
                 .append("Previous Hash   : ").append(previousHash).append("\n")
