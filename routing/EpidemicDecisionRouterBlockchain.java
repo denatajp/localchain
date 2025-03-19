@@ -459,15 +459,16 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean shouldSendMessageToHost(Message m, DTNHost otherHost, DTNHost thisHost) {
-        if (isMiner(thisHost) && isCollector(otherHost)) {
-            return false;
-        }
-        return true;
+//        if (isMiner(thisHost) && isCollector(otherHost)) {
+//            return false;
+//        }
+//        return true;
+        return isMiner(thisHost) && (isOperatorProxy(otherHost) || isMiner(otherHost));
     }
 
     @Override
     public boolean shouldDeleteSentMessage(Message m, DTNHost otherHost) {
-        return false;
+        return true;
     }
 
     @Override
