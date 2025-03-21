@@ -420,6 +420,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      */
     private int getBestMinedBlock(List<Block> minedBlock) {
         if (minedBlock.isEmpty()) {
+            System.out.println("");
             return -1; // Return -1 jika daftar kosong
         }
 
@@ -467,12 +468,12 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean shouldDeleteSentMessage(Message m, DTNHost otherHost) {
-        return true;
+        return false;
     }
 
     @Override
     public boolean shouldDeleteOldMessage(Message m, DTNHost hostReportingOld) {
-        return false;
+        return true;
     }
 
     @Override

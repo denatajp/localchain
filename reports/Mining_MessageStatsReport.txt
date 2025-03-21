@@ -1,22 +1,20 @@
-
 Message stats for scenario Mining
-sim_time: 4686.9000
-created: 158
-started: 710
-relayed: 689
-aborted: 19
-dropped: 34
-removed: 689
-delivered: 80
-delivery_prob: 0.5063
+sim_time: 36295.3000
+created: 340
+started: 3372
+relayed: 3285
+aborted: 87
+dropped: 3625
+removed: 0
+delivered: 252
+delivery_prob: 0.7412
 response_prob: 0.0000
-overhead_ratio: 7.6125
-latency_avg: 1174.6750
-latency_med: 861.7000
-hopcount_avg: 3.9250
-hopcount_med: 3
-buffertime_avg: 355.9196
-buffertime_med: 180.7000
+overhead_ratio: 12.0357
+latency_avg: 1100.1877
+latency_med: 862.2000
+hopcount_avg: 2.0516
+hopcount_med: 2
+buffertime_avg: 6333.6949
+buffertime_med: 2238.1000
 rtt_avg: NaN
 rtt_med: NaN
-

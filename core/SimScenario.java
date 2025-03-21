@@ -202,9 +202,9 @@ public class SimScenario implements Serializable {
      */
     private SimMap simMap;
 
-    public Map<Localchain,DTNHost> getLocalChains() {
-        return localChains;
-    }
+//    public Map<Localchain,DTNHost> getLocalChains() {
+//        return localChains;
+//    }
 
     /**
      * Global connection event listeners
