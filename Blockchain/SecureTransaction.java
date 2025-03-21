@@ -1,8 +1,14 @@
 package Blockchain;
 
 import java.security.*;
-
+import java.util.Base64;
+import com.google.gson.GsonBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class SecureTransaction {
+        static {
+        // Daftarkan provider Bouncy Castle
+        Security.addProvider(new BouncyCastleProvider());
+    }
     // Generate hash SHA-256
     public static String applySha256(String input) {
         try {

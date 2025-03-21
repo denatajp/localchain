@@ -165,7 +165,12 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                         int indexBestTRX = getBestTranx(trx);
                         List<Transaction> bestTransactionList = new ArrayList<>(trx.get(indexBestTRX));
-
+                        for (int i = 0; i < bestTransactionList.size(); i++) {
+                            if (!bestTransactionList.get(i).verifySignature()) {
+                                System.out.println("Transaksi "+ bestTransactionList.get(i).getTransactionHash()+" tidak valid!");
+                                bestTransactionList.remove(i);
+                            }
+                        }
                         Block b = new Block(previousHash, bestTransactionList, System.currentTimeMillis());
                         b.setFee(getFee(bestTransactionList));
                         b.setMinedBy(peer);
@@ -420,7 +425,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      */
     private int getBestMinedBlock(List<Block> minedBlock) {
         if (minedBlock.isEmpty()) {
-            System.out.println("");
             return -1; // Return -1 jika daftar kosong
         }
 

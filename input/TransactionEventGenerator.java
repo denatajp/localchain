@@ -5,11 +5,15 @@
 package input;
 
 import Blockchain.Inisialisasi;
+import Blockchain.SecureTransaction;
 import Blockchain.Transaction;
+import core.DTNHost;
 import java.util.Random;
 
 import core.Settings;
 import core.SettingsError;
+import core.SimScenario;
+import java.security.PublicKey;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -225,6 +229,15 @@ public class TransactionEventGenerator implements EventQueue {
 
         return to;
     }
+        protected int drawToAddressTrx(int from) {
+            int to;
+            do {
+                to = 1+rng.nextInt(56);
+            } while (to==from);
+            
+        return to;
+    }
+
 
     /**
      * Returns the next message creation event
@@ -234,28 +247,27 @@ public class TransactionEventGenerator implements EventQueue {
     @Override
     public ExternalEvent nextEvent() {
         int responseSize = 0;
-        int msgSize;
-        int interval;
-        int from;
-        int to;
+        int msgSize =drawMessageSize() ;
+        int interval= drawNextEventTimeDiff();
+        int from= drawHostAddress(this.hostRange);;
+        int to= drawToAddress(from);;
 
-        from = drawHostAddress(this.hostRange);
-        to = drawToAddress(from);
-
-        String sender = "miner" + from;
-        String[] names = Inisialisasi.getNames();
-        String receiver = names[rng.nextInt(names.length)];
-        
+             
+        DTNHost senderHost = SimScenario.getInstance().getHosts().get(from);
+        DTNHost receiverHost = SimScenario.getInstance().getHosts().get(drawToAddressTrx(from));
+        PublicKey senderPublicKey = senderHost.getWallet().getPublicKey();
+        PublicKey receiverPublicKey = receiverHost.getWallet().getPublicKey();
+        if (!senderHost.toString().startsWith("min") || senderHost.getWallet() == null) {
+            return null;
+        }
         double amount = ThreadLocalRandom.current().nextDouble(10, 1000);
         long timestamp = System.currentTimeMillis();
         
-        msgSize = drawMessageSize();
-        interval = drawNextEventTimeDiff();
-
-        Transaction tr = new Transaction(sender, receiver, amount, timestamp, amount);
-        
+        Transaction tr = new Transaction(senderPublicKey, receiverPublicKey, amount, timestamp);
+        tr.generateSignature(senderHost.getWallet().getPrivateKey());
         TransactionCreateEvent tce = new TransactionCreateEvent(from, to, "TRX" + eventCount++,
                 msgSize, responseSize, this.nextEventsTime, tr);
+        
         
         this.nextEventsTime += interval;
 

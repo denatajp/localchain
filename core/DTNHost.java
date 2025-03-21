@@ -8,6 +8,7 @@ import Blockchain.Block;
 import Blockchain.Blockchain;
 import Blockchain.Localchain;
 import Blockchain.Transaction;
+import Blockchain.Wallet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,7 +44,12 @@ public class DTNHost implements Comparable<DTNHost> {
     private List<MovementListener> movListeners;
     private List<NetworkInterface> net;
     private ModuleCommunicationBus comBus;
+     /* ---------------------- FIELD OPERATOR PROXY ------------------- */
+    private Wallet wallet;
 
+    public Wallet getWallet() {
+        return wallet;
+    }
     /* ---------------------- FIELD OPERATOR PROXY ------------------- */
     private List<Transaction> transactionBuffer;
     private List<List<Transaction>> trx;
@@ -140,6 +146,9 @@ public class DTNHost implements Comparable<DTNHost> {
         if (this.name.startsWith("col")) {
             this.completedLocalchains = new ArrayList<>();
             
+        }
+        if (this.name.startsWith("min")) {
+            this.wallet = new Wallet();
         }
 
         // TODO - think about the names of the interfaces and the nodes
