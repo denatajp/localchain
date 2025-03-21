@@ -1,3 +1,4 @@
+
 Message stats for scenario Mining
 sim_time: 4686.9000
 created: 158
@@ -18,3 +19,4 @@ buffertime_avg: 355.9196
 buffertime_med: 180.7000
 rtt_avg: NaN
 rtt_med: NaN
+
