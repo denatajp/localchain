@@ -137,6 +137,13 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
             reward_algorithmSix(host, peer);
         }
 
+        /*
+            Setelah semua localchain sudah diappend ke mainchain, dari
+            Collector memberi kabar ke Home bahwa sudah selesai, lalu
+            Home memberi tahu para operator proxy bahwa sudah selesai dan
+            siap untuk memberi reward ke para miner yang bloknya sudah 
+            terpilih dalam proses mining.
+        */
         if (SimClock.getTime() >= 500000) {
             for (DTNHost h : SimScenario.getInstance().getHosts()) {
                 if (isMiner(h)) {
