@@ -10,7 +10,6 @@ import core.Settings;
 import core.SimClock;
 import core.SimScenario;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     /**
      * For Report purpose, maybe needed some variable
      */
-    protected LinkedList<Double> resourcesList; 
+    protected LinkedList<Double> resourcesList;
     public static final String TOTAL_CONTACT_INTERVAL = "perTotalContact";
     public static final int DEFAULT_CONTACT_INTERVAL = 300;
     private static final String THRESHOLD = "threshold";
@@ -134,6 +133,18 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 ke blockchain utama
              */
             appending_algorithmFive(host, peer);
+
+            reward_algorithmSix(host, peer);
+        }
+
+        if (SimClock.getTime() >= 500000) {
+            for (DTNHost h : SimScenario.getInstance().getHosts()) {
+                if (isMiner(h)) {
+                    System.out.println("Wallet " + h + ": " + h.getWallet().getBalance());
+
+                }
+            }
+            System.exit(0);
         }
     }
 
@@ -160,14 +171,13 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                     if (!host.getVisitedMiner().contains(peer)) { // jika baru pertama kali bertemu
 
-
                         host.getVisitedMiner().add(peer);
 
                         int indexBestTRX = getBestTranx(trx);
                         List<Transaction> bestTransactionList = new ArrayList<>(trx.get(indexBestTRX));
                         for (int i = 0; i < bestTransactionList.size(); i++) {
                             if (!bestTransactionList.get(i).verifySignature()) {
-                                System.out.println("Transaksi "+ bestTransactionList.get(i).getTransactionHash()+" tidak valid!");
+                                System.out.println("Transaksi " + bestTransactionList.get(i).getTransactionHash() + " tidak valid!");
                                 bestTransactionList.remove(i);
                             }
                         }
@@ -177,9 +187,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                         long begin = System.currentTimeMillis();
 
-
                         b.mineBlock(localChain.getDifficulty());
-
 
                         long end = System.currentTimeMillis();
                         long time = end - begin;
@@ -309,14 +317,20 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      */
     private void selection_algorithmFour(DTNHost host, DTNHost peer) {
         if (isHome(host)) {
+
             if (isCollector(peer)) {
+                if (peer.isAppendingDone() || host.isAppendingDone()) {
+                    return;
+                }
 
                 if (peer.getSelectedLocalchain() == null) {
 
                     if (host.getStoredLocalchains().size() == SimScenario.getInstance().localChainCount) {
                         if (host.getStoredLocalchains().isEmpty()) {
                             System.out.println("SEMUA TRANSAKSI SUDAH DITAMBAHKAN DI BLOCKCHAIN");
-                            System.exit(0);
+                            host.setAppendingDone(true);
+                            peer.setAppendingDone(true);
+                            return;
                         }
 
                         for (Localchain sL : host.getStoredLocalchains()) {
@@ -355,7 +369,11 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      */
     private void appending_algorithmFive(DTNHost host, DTNHost peer) {
         if (isCollector(host)) {
+
             if (isInternet(peer)) {
+                if (host.isAppendingDone()) {
+                    return;
+                }
 
                 if (host.getSelectedLocalchain() != null) {
                     SimScenario.getInstance().localChainCount--;
@@ -374,8 +392,35 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 }
             }
         }
+    }
 
-   } 
+    private void reward_algorithmSix(DTNHost host, DTNHost peer) {
+        /* Informasikan dulu dari home ke para operator proxy */
+        if (isOperatorProxy(host) && isHome(peer)) {
+            if (peer.isAppendingDone()) {
+                host.setAppendingDone(true);
+            }
+        }
+
+        /* Mulai bagikan fee ke miner */
+        if (isMiner(host) && isOperatorProxy(peer)) {
+            if (peer.isAppendingDone() && !peer.getRewardedMiners().contains(host)) {
+                List<Block> list = peer.getLocalchain().getChain();
+
+                for (Block b : list) {
+                    DTNHost miner = b.getMinedBy();
+                    double fee = b.getFee();
+
+                    if (miner.equals(host)) {
+                        System.out.println("Memberikan reward ke " + miner + ".....");
+                        host.getWallet().addBalance(fee);
+                    }
+                }
+
+                peer.getRewardedMiners().add(host);
+            }
+        }
+    }
 
     /**
      * Finds the index of the transaction list with the highest total amount.
@@ -472,7 +517,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean shouldDeleteSentMessage(Message m, DTNHost otherHost) {
-        return false;
+        return m.getTo() == otherHost;
     }
 
     @Override

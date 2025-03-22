@@ -1,8 +1,6 @@
 package Blockchain;
 
 import java.security.*;
-import java.util.Base64;
-import com.google.gson.GsonBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class SecureTransaction {
         static {

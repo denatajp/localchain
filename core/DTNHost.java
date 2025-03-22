@@ -44,12 +44,12 @@ public class DTNHost implements Comparable<DTNHost> {
     private List<MovementListener> movListeners;
     private List<NetworkInterface> net;
     private ModuleCommunicationBus comBus;
-     /* ---------------------- FIELD OPERATOR PROXY ------------------- */
+    private boolean appendingDone = false;
+    
+    /* ---------------------- FIELD MINER ------------------- */
     private Wallet wallet;
-
-    public Wallet getWallet() {
-        return wallet;
-    }
+    /* --------------------------------------------------------------- */
+    
     /* ---------------------- FIELD OPERATOR PROXY ------------------- */
     private List<Transaction> transactionBuffer;
     private List<List<Transaction>> trx;
@@ -62,6 +62,7 @@ public class DTNHost implements Comparable<DTNHost> {
     private static final int MAX_PACKET_SIZE = 8; // Ukuran maksimal paket
     private Random random; // Untuk menghasilkan ukuran paket acak
     private boolean hasGrouped;
+    private Set<DTNHost> rewardedMiner;
     /* --------------------------------------------------------------- */
 
     /* ----------------------- FIELD HOME ---------------------------- */
@@ -78,21 +79,6 @@ public class DTNHost implements Comparable<DTNHost> {
     private Blockchain mainChain;
     /* --------------------------------------------------------------- */
 
-    public Blockchain getMainChain() {
-        return mainChain;
-    }
-
-    public void setMainChain(Blockchain mainChain) {
-        this.mainChain = mainChain;
-    }
-    
-    public Localchain getSelectedLocalchain() {
-        return selectedLocalchain;
-    }
-
-    public void setSelectedLocalchain(Localchain selectedLocalchain) {
-        this.selectedLocalchain = selectedLocalchain;
-    }
 
     static {
         DTNSim.registerForReset(DTNHost.class.getCanonicalName());
@@ -135,6 +121,7 @@ public class DTNHost implements Comparable<DTNHost> {
             this.v = 0;
             this.random = new Random();
             this.hasGrouped = false;
+            this.rewardedMiner = new HashSet<>();
         }
 
         if (this.name.startsWith("hom")) {
@@ -212,6 +199,43 @@ public class DTNHost implements Comparable<DTNHost> {
             System.out.println("Semua transaksi telah dikelompokkan di " + name);
             this.hasGrouped = true;
         }
+    }
+
+    
+    public Blockchain getMainChain() {
+        return mainChain;
+    }
+
+    public void setMainChain(Blockchain mainChain) {
+        this.mainChain = mainChain;
+    }
+    
+    public Localchain getSelectedLocalchain() {
+        return selectedLocalchain;
+    }
+
+    public void setSelectedLocalchain(Localchain selectedLocalchain) {
+        this.selectedLocalchain = selectedLocalchain;
+    }
+
+    public Set<DTNHost> getRewardedMiners() {
+        return rewardedMiner;
+    }
+
+    public void setRewardedMiner(Set<DTNHost> rewardedMiner) {
+        this.rewardedMiner = rewardedMiner;
+    }
+    
+    public Wallet getWallet() {
+        return wallet;
+    }
+    
+    public boolean isAppendingDone() {
+        return appendingDone;
+    }
+
+    public void setAppendingDone(boolean appendingDone) {
+        this.appendingDone = appendingDone;
     }
     
     public boolean isReadyToStore() {
