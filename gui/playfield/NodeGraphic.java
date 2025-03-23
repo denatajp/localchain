@@ -42,7 +42,17 @@ public class NodeGraphic extends PlayFieldGraphic {
 	public NodeGraphic(DTNHost node) {	
 		this.node = node;
                 try {
-                    nodeImage = ImageIO.read(new File("data/Node/miner4.png"));
+                    if (isMiner(node)) {
+                        nodeImage = ImageIO.read(new File("data/Node/miner4.png"));
+                    } else if (isOperatorProxy(node)) {
+                        // nodeImage = ImageIO.read(new File("data/Node/ope.png"));
+                    } else if (isHome(node)) {
+                        // nodeImage = ImageIO.read(new File("data/Node/home.png"));
+                    } else if (isCollector(node)) {
+                        // nodeImage = ImageIO.read(new File("data/Node/col.png"));
+                    } else if (isInternet(node)) {
+                        // nodeImage = ImageIO.read(new File("data/Node/internet.png"));
+                    }
                 } catch (IOException e) {
                     System.err.println("Gambar node tidak ditemukan!");
                     nodeImage = null; // Fallback ke drawRect
@@ -99,19 +109,13 @@ public class NodeGraphic extends PlayFieldGraphic {
                     int imgWidth = nodeImage.getWidth(null);
                     int imgHeight = nodeImage.getHeight(null);
                     
-
                     // Hitung posisi tengah
                     int x = scale(loc.getX()) - imgWidth/2;
                     int y = scale(loc.getY()) - imgHeight/2;
-
-//                    int newWidth = scale(20); // Sesuaikan dengan kebutuhan
-//                    int newHeight = scale(20);
-//                    Image scaledImage = nodeImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-//                    g2.drawImage(scaledImage, x, y, null);
                     
                     g2.drawImage(nodeImage, x, y, null);
                 } else {
-                    // Fallback ke drawRect jika gambar gagal load
+                    // fallback ke drawRect jika gambar gagal load
                     g2.drawRect(scale(loc.getX()-1), scale(loc.getY()-1), scale(2), scale(2));
                 }
 //		g2.drawRect(scale(loc.getX()-1),scale(loc.getY()-1),scale(2),scale(2));
@@ -193,5 +197,24 @@ public class NodeGraphic extends PlayFieldGraphic {
 		}
 
 	}
+ 
+    private boolean isOperatorProxy(DTNHost host) {
+        return host.toString().startsWith("ope");
+    }
 
+    private boolean isMiner(DTNHost host) {
+        return host.toString().startsWith("min");
+    }
+
+    private boolean isHome(DTNHost host) {
+        return host.toString().startsWith("home");
+    }
+
+    private boolean isInternet(DTNHost host) {
+        return host.toString().startsWith("inter");
+    }
+
+    private boolean isCollector(DTNHost host) {
+        return host.toString().startsWith("col");
+    }
 }
