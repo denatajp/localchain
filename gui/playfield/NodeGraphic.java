@@ -44,14 +44,16 @@ public class NodeGraphic extends PlayFieldGraphic {
                 try {
                     if (isMiner(node)) {
                         nodeImage = ImageIO.read(new File("data/Node/miner.png"));
+                        hostNameColor = Color.BLUE;
                     } else if (isOperatorProxy(node)) {
                         nodeImage = ImageIO.read(new File("data/Node/opeproxy.png"));
-//                    } else if (isHome(node)) {
-//                         nodeImage = ImageIO.read(new File("data/Node/home.png"));
+                        hostNameColor = Color.RED;
                     } else if (isCollector(node)) {
                          nodeImage = ImageIO.read(new File("data/Node/collector.png"));
+                         hostNameColor = Color.MAGENTA;
                     } else if (isInternet(node)) {
                          nodeImage = ImageIO.read(new File("data/Node/internet.png"));
+                         hostNameColor = Color.BLUE;
                     }
                 } catch (IOException e) {
                     System.err.println("Gambar node tidak ditemukan!");
