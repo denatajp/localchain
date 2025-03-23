@@ -13,6 +13,10 @@ import core.Connection;
 import core.Coord;
 import core.DTNHost;
 import core.NetworkInterface;
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 /**
  * Visualization of a DTN Node
@@ -33,8 +37,16 @@ public class NodeGraphic extends PlayFieldGraphic {
 
 	private DTNHost node;
 
+        private Image nodeImage;
+        
 	public NodeGraphic(DTNHost node) {	
 		this.node = node;
+                try {
+                    nodeImage = ImageIO.read(new File("data/Node/miner2.png"));
+                } catch (IOException e) {
+                    System.err.println("Gambar node tidak ditemukan!");
+                    nodeImage = null; // Fallback ke drawRect
+                }
 	}
 
 	@Override
@@ -81,7 +93,28 @@ public class NodeGraphic extends PlayFieldGraphic {
 		}
 
 		g2.setColor(hostColor);	// draw rectangle to host's location
-		g2.drawRect(scale(loc.getX()-1),scale(loc.getY()-1),scale(2),scale(2));
+                
+                // Ganti bagian drawRect dengan:
+                if (nodeImage != null) {
+                    int imgWidth = nodeImage.getWidth(null);
+                    int imgHeight = nodeImage.getHeight(null);
+                    
+
+                    // Hitung posisi tengah
+                    int x = scale(loc.getX()) - imgWidth/2;
+                    int y = scale(loc.getY()) - imgHeight/2;
+
+//                    int newWidth = scale(20); // Sesuaikan dengan kebutuhan
+//                    int newHeight = scale(20);
+//                    Image scaledImage = nodeImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+//                    g2.drawImage(scaledImage, x, y, null);
+                    
+                    g2.drawImage(nodeImage, x, y, null);
+                } else {
+                    // Fallback ke drawRect jika gambar gagal load
+                    g2.drawRect(scale(loc.getX()-1), scale(loc.getY()-1), scale(2), scale(2));
+                }
+//		g2.drawRect(scale(loc.getX()-1),scale(loc.getY()-1),scale(2),scale(2));
 
 		if (drawNodeName) {
 			g2.setColor(hostNameColor);
