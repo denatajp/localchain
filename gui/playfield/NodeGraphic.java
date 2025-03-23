@@ -43,15 +43,15 @@ public class NodeGraphic extends PlayFieldGraphic {
 		this.node = node;
                 try {
                     if (isMiner(node)) {
-                        nodeImage = ImageIO.read(new File("data/Node/miner4.png"));
+                        nodeImage = ImageIO.read(new File("data/Node/miner.png"));
                     } else if (isOperatorProxy(node)) {
-                        // nodeImage = ImageIO.read(new File("data/Node/ope.png"));
-                    } else if (isHome(node)) {
-                        // nodeImage = ImageIO.read(new File("data/Node/home.png"));
+                        nodeImage = ImageIO.read(new File("data/Node/opeproxy.png"));
+//                    } else if (isHome(node)) {
+//                         nodeImage = ImageIO.read(new File("data/Node/home.png"));
                     } else if (isCollector(node)) {
-                        // nodeImage = ImageIO.read(new File("data/Node/col.png"));
+                         nodeImage = ImageIO.read(new File("data/Node/collector.png"));
                     } else if (isInternet(node)) {
-                        // nodeImage = ImageIO.read(new File("data/Node/internet.png"));
+                         nodeImage = ImageIO.read(new File("data/Node/internet.png"));
                     }
                 } catch (IOException e) {
                     System.err.println("Gambar node tidak ditemukan!");
