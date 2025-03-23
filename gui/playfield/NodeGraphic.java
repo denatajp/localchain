@@ -42,7 +42,7 @@ public class NodeGraphic extends PlayFieldGraphic {
 	public NodeGraphic(DTNHost node) {	
 		this.node = node;
                 try {
-                    nodeImage = ImageIO.read(new File("data/Node/miner2.png"));
+                    nodeImage = ImageIO.read(new File("data/Node/miner4.png"));
                 } catch (IOException e) {
                     System.err.println("Gambar node tidak ditemukan!");
                     nodeImage = null; // Fallback ke drawRect
