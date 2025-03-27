@@ -2,6 +2,8 @@ package Blockchain;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Signature;
 import java.util.List;
 
 public class main {
@@ -51,7 +53,8 @@ public class main {
         }
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchProviderException {
+        Signature dsa = Signature.getInstance("ECDSA", "BC");
         String hash1 ="00055c6aa36d600349f483d1234d3d413bac0424857c76917a2d0d8eaedfa458";
         String hash2 ="b7e79e72ea9afcdf8d2dc0b42b1946aa72c41afc499de2d7dd450061788b2a4f";
         String hash3 ="000ef7fe92a8f8ed9800a27c5fef89e40e9a3c7ce16f56b5c53d8f2d8567c4e1";

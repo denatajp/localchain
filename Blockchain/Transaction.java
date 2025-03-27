@@ -1,17 +1,21 @@
 package Blockchain;
 
+import java.security.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 public class Transaction {
 
-    private String sender;
-    private String receiver;
+    private PublicKey sender;
+    private PublicKey receiver;
     private double amount;
     private long timestamp;
     private String transactionHash;
+    private byte[] signature;
 
-    public Transaction(String sender, String receiver, double amount, long timestamp, double fee) {
+    public Transaction(PublicKey sender, PublicKey receiver, double amount, long timestamp) {
         this.sender = sender;
         this.receiver = receiver;
         this.amount = amount;
@@ -20,22 +24,8 @@ public class Transaction {
     }
 
     private String calculateHash() {
-        String data = sender + receiver + amount + timestamp;
-        return applySHA256(data);
-    }
-
-    private String applySHA256(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(input.getBytes());
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                hexString.append(String.format("%02x", b));
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        return SecureTransaction.applySha256(SecureTransaction.getStringFromKey(sender) + SecureTransaction.getStringFromKey(sender)
+                + amount + timestamp);
     }
 
     public String getTransactionHash() {
@@ -48,6 +38,16 @@ public class Transaction {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    public void generateSignature(PrivateKey privateKey) {
+        String data = SecureTransaction.getStringFromKey(sender) + SecureTransaction.getStringFromKey(receiver) + amount;
+        signature = SecureTransaction.applyECDSASig(privateKey, data);
+    }
+
+    public boolean verifySignature() {
+        String data = SecureTransaction.getStringFromKey(sender) + SecureTransaction.getStringFromKey(receiver) + amount;
+        return SecureTransaction.verifyECDSASig(sender, data, signature);
     }
 
     @Override

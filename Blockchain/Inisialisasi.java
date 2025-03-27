@@ -70,9 +70,9 @@ public class Inisialisasi {
                 long start = Instant.parse("2000-01-01T00:00:00Z").getEpochSecond();
                 long end = Instant.parse("2030-12-31T23:59:59Z").getEpochSecond();
                 long timeStamp = ThreadLocalRandom.current().nextLong(start, end + 1);
-                Transaction t = new Transaction(sender, receiver, amount, timeStamp, fee);
+//                Transaction t = new Transaction(sender, receiver, amount, timeStamp, fee);
                 
-                trx.add(t);
+//                trx.add(t);
             }
             listTransaksi.add(new ArrayList<>(trx));
             trx.clear();
