@@ -15,6 +15,33 @@ Mekanisme ini menggunakan konsep `Localchain`, di mana ada blockchain-blockchain
 - **Reward System**: Distribusi reward ke miner berdasarkan kontribusi penambangan.
 
 
+## Instalasi
+Kami mengembangkan project ini menggunakan Netbeans sebagai IDE kami. Untuk instalasi project menggunakan Netbeans sebagai berikut:
+
+#### 1. Buat project baru, setelah itu pergi ke direktori tempat project berada (masuk folder src):
+![image](https://github.com/user-attachments/assets/7d666f4a-3389-4791-a9c0-9e445066a324)
+
+#### 2. Clone Repository di direktori lewat Git Bash:
+   ```bash
+   git clone https://github.com/2denata/localchain.git
+   ```
+
+#### 3. Pindahkan semua file dari folder `localchain` ke luar folder. Pastikan semua file dan folder ada di direktori `.../src/`
+
+#### 4. Tambahkan library dan .jar yang dibutuhkan:
+![image](https://github.com/user-attachments/assets/1eaeb3bb-c42b-419b-b5fe-eba4afab40bd)
+- Libraries = JUnit 4.12
+- JAR = "DTNConsoleConnection.jar" dan "ECLA.jar"
+
+#### 5. Download .jar tambahan (Bouncy Castle)
+Library ini penting untuk proses kriptografi. Download dari [link ini](https://www.bouncycastle.org/download/bouncy-castle-java/#latest)
+
+#### 6. Tambahkan bcprov-jdk18on-xxx.jar ke library
+
+#### 7. Edit custom configuration running project:
+![image](https://github.com/user-attachments/assets/572d6c23-6ccf-4746-9943-1b8bd92df174)
+
+#### 8. Run Project!
 
 
 ## Apa Yang Perlu Disiapkan
@@ -73,31 +100,3 @@ src/
   ```
   
 </details>
-
-## Instalasi
-Kami mengembangkan project ini menggunakan Netbeans sebagai IDE kami. Untuk instalasi project menggunakan Netbeans sebagai berikut:
-
-1. Buat project baru, setelah itu pergi ke direktori tempat project berada (masuk folder src):
-![image](https://github.com/user-attachments/assets/7d666f4a-3389-4791-a9c0-9e445066a324)
-
-2. Clone Repository di direktori lewat Git Bash:
-   ```bash
-   git clone https://github.com/2denata/localchain.git
-   ```
-
-3. Pindahkan semua file dari folder `localchain` ke luar folder. Pastikan semua file dan folder ada di direktori `.../src/`
-
-4. Tambahkan library dan .jar yang dibutuhkan:
-Libraries = JUnit 4.12
-JAR = "DTNConsoleConnection.jar" dan "ECLA.jar"
-![image](https://github.com/user-attachments/assets/1eaeb3bb-c42b-419b-b5fe-eba4afab40bd)
-
-5. Download .jar tambahan (Bouncy Castle)
-Library ini penting untuk proses kriptografi. Download dari [link ini](https://www.bouncycastle.org/download/bouncy-castle-java/#latest)
-
-6. Tambahkan bcprov-jdk18on-xxx.jar ke library
-
-7. Edit custom configuration running project:
-![image](https://github.com/user-attachments/assets/572d6c23-6ccf-4746-9943-1b8bd92df174)
-
-8. Run Project!
