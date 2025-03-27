@@ -44,6 +44,61 @@ Library ini penting untuk proses kriptografi. Download dari [link ini](https://w
 
 8. Run Project!
 
+## Aktor yang Terlibat
+
+Berikut adalah entitas utama dalam simulasi blockchain DTN ini:
+
+
+### 1. ![opeproxy](https://github.com/user-attachments/assets/44bcf68a-e832-4d55-bda3-cbd262ea20ae) **Miner (Penambang)** 
+- **Peran**:  
+  - Menambang blok baru dengan menyelesaikan Proof-of-Work (PoW).  
+  - Menerima dan memverifikasi transaksi dari pengguna.  
+  - Berpartisipasi dalam konsensus verifikasi blok.  
+- **Karakteristik**:  
+  - Memiliki dompet kripto (`Wallet`) dengan pasangan kunci ECDSA.  
+  - Bergerak acak dalam area tertentu (model `RandomArea`).  
+  - Contoh ID: `miner1`, `miner2`, dll.  
+
+
+### 2. ![miner](https://github.com/user-attachments/assets/63c2efac-478e-4197-a777-b771ec87a193) **Operator Proxy**  
+- **Peran**:  
+  - Mengumpulkan dan mengelompokkan transaksi dari Miner.  
+  - Mengkoordinasikan proses penambangan blok ke Miner.  
+  - Memilih blok tercepat untuk ditambahkan ke *localchain*.
+  - Bertugas memberikan fee kepada miner terpilih
+- **Karakteristik**:  
+  - Memiliki buffer transaksi (`transactionBuffer`).  
+  - Mengelola `localchain` (rantai blok sementara).  
+  - Contoh ID: `ope1`, `ope2`, dll.  
+
+
+### 3. ![3](https://github.com/user-attachments/assets/ead250cf-13b9-40c0-9428-ee1c8a3331d9) **Home**  
+- **Peran**:  
+  - Menyimpan *localchain* yang dikirim Operator Proxy.  
+  - Bertindak sebagai node penyimpanan sementara sebelum data dikirim ke Collector.  
+- **Karakteristik**:  
+  - Posisi tetap (`StationaryMovement`).  
+  - Memiliki daftar `storedLocalchains`.  
+  - Contoh ID: `home1`.  
+
+
+### 4. ![collector](https://github.com/user-attachments/assets/97276a04-c60d-4f7f-8a25-8973f3dcd13b) **Collector**  
+- **Peran**:  
+  - Memilih *localchain* terbaik (terpanjang) dari Home.  
+  - Mengintegrasikan *localchain* ke blockchain utama di Internet.  
+- **Karakteristik**:  
+  - Bergerak cepat untuk efisiensi koordinasi.  
+  - Contoh ID: `col1`.  
+
+
+### 5. ![4](https://github.com/user-attachments/assets/29228f0a-275a-4dbf-95a7-98f4c9d1900a) **Internet**  
+- **Peran**:  
+  - Menyimpan blockchain utama (`mainChain`).  
+  - Validasi akhir dan penyimpanan blok dari Collector.  
+- **Karakteristik**:  
+  - Posisi tetap di lokasi terpisah.  
+  - Contoh ID: `inter1`.
+
 ## Alur Program
 ### Inisialisasi:
 
@@ -67,6 +122,7 @@ Library ini penting untuk proses kriptografi. Download dari [link ini](https://w
 - **JDK 8+**
 - **Library Bouncy Castle** (untuk kriptografi ECDSA)
 - **IDE** (Netbeans, VSCode, dll)
+  
 ## Modifikasi
 Kami menggunakan framework ONE Simulator untuk melakukan proses simulasi. Untuk itu, kami memodifikasi beberapa class dan juga membuat class baru untuk melengkapi algoritma. Untuk mempermudah pengembangan, kami akan menjabarkan mana saja class yang kami modifikasi saja (sisanya default dari framework ONE Simulator). Secara struktur, perubahan yang kami buat adalah sebagai berikut:
 ```bash
@@ -97,7 +153,7 @@ src/
 |
 ├── input/
 |    ├── TransactionCreateEvent.java
-|    └── TrannsactionEventGenerator.java
+|    └── TransactionEventGenerator.java
 | 
 ├── movement/
 |       ├── RandomArea.java
@@ -113,9 +169,15 @@ src/
   <summary>Spoiler warning</summary>
   
   Spoiler text. Note that it's important to have a space after the summary tag. You should be able to write any markdown you want inside the `<details>` tag... just make sure you close `<details>` afterward.
+
   
   ```java
   System.out.print("Hello World");
   ```
   
 </details>
+
+
+
+
+
