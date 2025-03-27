@@ -31,8 +31,8 @@ Kami mengembangkan project ini menggunakan Netbeans sebagai IDE kami. Untuk inst
 
 4. Tambahkan library dan .jar yang dibutuhkan: <br>
 ![image](https://github.com/user-attachments/assets/1eaeb3bb-c42b-419b-b5fe-eba4afab40bd)
-- Libraries = JUnit 4.12
-- JAR = "DTNConsoleConnection.jar" dan "ECLA.jar"
+   - Libraries = JUnit 4.12
+   - JAR = "DTNConsoleConnection.jar" dan "ECLA.jar"
 
 5. Download .jar tambahan (Bouncy Castle)
 Library ini penting untuk proses kriptografi. Download dari [link ini](https://www.bouncycastle.org/download/bouncy-castle-java/#latest)
