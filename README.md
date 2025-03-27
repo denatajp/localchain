@@ -18,38 +18,57 @@ Mekanisme ini menggunakan konsep `Localchain`, di mana ada blockchain-blockchain
 ## Instalasi
 Kami mengembangkan project ini menggunakan Netbeans sebagai IDE kami. Untuk instalasi project menggunakan Netbeans sebagai berikut:
 
-#### 1. Buat project baru, setelah itu pergi ke direktori tempat project berada (masuk folder src):
+1. Buat project baru, setelah itu pergi ke direktori tempat project berada (masuk folder src):
 ![image](https://github.com/user-attachments/assets/7d666f4a-3389-4791-a9c0-9e445066a324)
 
-#### 2. Clone Repository di direktori lewat Git Bash:
+2. Clone Repository di direktori lewat Git Bash:
    ```bash
    git clone https://github.com/2denata/localchain.git
    ```
 
-#### 3. Pindahkan semua file dari folder `localchain` ke luar folder. Pastikan semua file dan folder ada di direktori `.../src/`
+3. Pindahkan semua file dari folder `localchain` ke luar folder. Pastikan semua file dan folder ada di direktori `.../src/`
 
-#### 4. Tambahkan library dan .jar yang dibutuhkan:
+
+4. Tambahkan library dan .jar yang dibutuhkan: <br>
 ![image](https://github.com/user-attachments/assets/1eaeb3bb-c42b-419b-b5fe-eba4afab40bd)
 - Libraries = JUnit 4.12
 - JAR = "DTNConsoleConnection.jar" dan "ECLA.jar"
 
-#### 5. Download .jar tambahan (Bouncy Castle)
+5. Download .jar tambahan (Bouncy Castle)
 Library ini penting untuk proses kriptografi. Download dari [link ini](https://www.bouncycastle.org/download/bouncy-castle-java/#latest)
 
-#### 6. Tambahkan bcprov-jdk18on-xxx.jar ke library
+6. Tambahkan bcprov-jdk18on-xxx.jar ke library
 
-#### 7. Edit custom configuration running project:
+7. Edit custom configuration running project:
 ![image](https://github.com/user-attachments/assets/572d6c23-6ccf-4746-9943-1b8bd92df174)
 
-#### 8. Run Project!
+8. Run Project!
 
+## Alur Program
+### Inisialisasi:
+
+- Miner membuat transaksi dan mengirim ke Operator Proxy.
+- Transaksi dikelompokkan menjadi paket oleh Operator Proxy.
+- Penambangan Blok:
+     Operator Proxy membagikan transaksi ke Miner dengan cara mendatangi satu-satu miner. Miner yang didatangi melakukan proses mining sambil dicatat waktunya oleh OperatorProxy
+
+### Verifikasi:
+- Blok divalidasi oleh Miner yang ada di area.
+- Blok valid ditambahkan ke localchain.
+
+### Penyimpanan ke Blockchain:
+- Localchain disimpan ke Home, lalu dipilih oleh Collector.
+- Collector menambahkan localchain ke blockchain utama.
+
+### Reward:
+- Miner menerima reward berdasarkan kontribusi penambangan.
 
 ## Apa Yang Perlu Disiapkan
 - **JDK 8+**
 - **Library Bouncy Castle** (untuk kriptografi ECDSA)
 - **IDE** (Netbeans, VSCode, dll)
 ## Modifikasi
-Kami menggunakan framework ONE Simulator untuk melakukan proses simulasi. Untuk itu, kami memodifikasi beberapa class dan juga membuat class baru untuk melengkapi algoritma. Secara struktur, perubahan yang kami buat adalah sebagai berikut:
+Kami menggunakan framework ONE Simulator untuk melakukan proses simulasi. Untuk itu, kami memodifikasi beberapa class dan juga membuat class baru untuk melengkapi algoritma. Untuk mempermudah pengembangan, kami akan menjabarkan mana saja class yang kami modifikasi saja (sisanya default dari framework ONE Simulator). Secara struktur, perubahan yang kami buat adalah sebagai berikut:
 ```bash
 src/
 ├── Blockchain/
