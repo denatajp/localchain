@@ -49,7 +49,7 @@ Library ini penting untuk proses kriptografi. Download dari [link ini](https://w
 Berikut adalah entitas utama dalam simulasi blockchain DTN ini:
 
 
-### 1. ![opeproxy](https://github.com/user-attachments/assets/44bcf68a-e832-4d55-bda3-cbd262ea20ae) **Miner (Penambang)** 
+### 1. ![miner](https://github.com/user-attachments/assets/63c2efac-478e-4197-a777-b771ec87a193) **Miner (Penambang)** 
 - **Peran**:  
   - Menambang blok baru dengan menyelesaikan Proof-of-Work (PoW).  
   - Menerima dan memverifikasi transaksi dari pengguna.  
@@ -60,7 +60,7 @@ Berikut adalah entitas utama dalam simulasi blockchain DTN ini:
   - Contoh ID: `miner1`, `miner2`, dll.  
 
 
-### 2. ![miner](https://github.com/user-attachments/assets/63c2efac-478e-4197-a777-b771ec87a193) **Operator Proxy**  
+### 2. ![opeproxy](https://github.com/user-attachments/assets/44bcf68a-e832-4d55-bda3-cbd262ea20ae) **Operator Proxy**  
 - **Peran**:  
   - Mengumpulkan dan mengelompokkan transaksi dari Miner.  
   - Mengkoordinasikan proses penambangan blok ke Miner.  
