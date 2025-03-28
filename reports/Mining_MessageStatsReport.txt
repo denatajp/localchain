@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Message stats for scenario Mining
 sim_time: 811.3000
 created: 28
@@ -18,3 +19,5 @@ buffertime_avg: 294.2500
 buffertime_med: 511.9000
 rtt_avg: NaN
 rtt_med: NaN
+=======
+>>>>>>> denata
