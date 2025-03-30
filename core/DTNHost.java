@@ -11,10 +11,8 @@ import Blockchain.Transaction;
 import Blockchain.Wallet;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -44,39 +42,126 @@ public class DTNHost implements Comparable<DTNHost> {
     private List<MovementListener> movListeners;
     private List<NetworkInterface> net;
     private ModuleCommunicationBus comBus;
+    
+    
     private boolean appendingDone = false;
     
-    /* ---------------------- FIELD MINER ------------------- */
-    private Wallet wallet;
-    /* --------------------------------------------------------------- */
+    /* -------------------------- FIELD MINER ------------------------------- */
+        /**
+         * Wallet milik node, setiap miner punya dompet digital
+         */
+        private Wallet wallet;
+    /* ---------------------------------------------------------------------- */
     
-    /* ---------------------- FIELD OPERATOR PROXY ------------------- */
-    private List<Transaction> transactionBuffer;
-    private List<List<Transaction>> trx;
-    private Set<DTNHost> visitedMiner;
-    private Block selectedBlock;
-    private int v;
-    private Localchain localchain;
-    private boolean readyToStore;
-    private static final int MIN_PACKET_SIZE = 5; // Ukuran minimal paket
-    private static final int MAX_PACKET_SIZE = 8; // Ukuran maksimal paket
-    private Random random; // Untuk menghasilkan ukuran paket acak
-    private boolean hasGrouped;
-    private Set<DTNHost> rewardedMiner;
-    /* --------------------------------------------------------------- */
+        
+        
+    /* ----------------------- FIELD OPERATOR PROXY ------------------------- */
+        /**
+         * Penyimpanan sementara transaksi saat fase pembangkitan transaksi
+         * oleh miner. Buffer ini yang nantinya akan dikelompokkan lagi menjadi
+         * beberapa grup (list) lagi.
+         */
+        private List<Transaction> transactionBuffer;
+        
+        /**
+         * Merupakan kumpulan dari list-list yang berasal dari transactionBuffer
+         * tadi yang sudah dikelompokkan. List ini nanti yang akan dipilih
+         * para penambang sesuai fee nya.
+         */
+        private List<List<Transaction>> trx;
+        
+        /**
+         * Catatan milik OperatorProxy yang mencatat siapa saja miner yang
+         * sudah dikunjungi selama proses mining maupun verifikasi. Pencatatan
+         * diperlukan untuk mengantisipasi 1 miner melakukan mining berulang-
+         * ulang karena bertemu OperatorProxy lebih dari sekali.
+         */
+        private Set<DTNHost> visitedMiner;
+        
+        /**
+         * Blok tertambang yang terpilih setelah diverifikasi sebanyak "v"
+         * miner.
+         */
+        private Block selectedBlock;
+        
+        /**
+         * Banyaknya miner yang setuju bahwa Blok yang ditambang valid
+         */
+        private int v;
+        
+        /**
+         * Localchain, setiap Operator Proxy punya masing-masing satu
+         */
+        private Localchain localchain;
+        
+        /**
+         * Penanda bahwa Operator Proxy siap untuk melakukan storing setelah 
+         * selesai proses mining-verifikasi
+         */
+        private boolean readyToStore;
+        
+        /**
+         * Ukuran minimal paket di dalam list trx
+         */
+        private static final int MIN_PACKET_SIZE = 5;
+        
+        /**
+         * Ukuran maksimal paket di dalam list trx
+         */
+        private static final int MAX_PACKET_SIZE = 8;
+        
+        /**
+         * Library untuk menghasilkan angka acak untuk ukuran paket
+         */
+        private Random random;
+        
+        /**
+         * Penanda bahwa Operator Proxy sudah melakukan grouping transaction.
+         * Jadi trx sudah berisi list yang berisi list-list transaksi yang
+         * telah digrup.
+         */
+        private boolean hasGrouped;
+        
+        /**
+         * Catatan OperatorProxy untuk menyimpan siapa saja miner di area
+         * mereka yang melakukan kontribusi mining untuk diberikan fee.
+         */
+        private Set<DTNHost> rewardedMiner;
+    /* ---------------------------------------------------------------------- */
 
-    /* ----------------------- FIELD HOME ---------------------------- */
-    private List<Localchain> storedLocalchains;
-    private Set<DTNHost> visitedOperatorProxy;
-    /* --------------------------------------------------------------- */
+        
+        
+    /* --------------------------- FIELD HOME ------------------------------- */
+        /**
+         * Kumpulan Localchain-localchain yang sudah distore
+         * oleh para Operator Proxy.
+         */
+        private List<Localchain> storedLocalchains;
+        
+        /**
+         * Catatan untuk home menyimpan siapa saja OperatorProxy yang sudah
+         * berkunjung ke Home
+         */
+        private Set<DTNHost> visitedOperatorProxy;
+    /* ---------------------------------------------------------------------- */
     
-    /* ----------------------- FIELD COLLECTOR ----------------------- */
-    private List<Localchain> completedLocalchains;
-    private Localchain selectedLocalchain;
-    /* --------------------------------------------------------------- */
+        
+        
+    /* ----------------------- FIELD COLLECTOR ------------------------------ */
+        /**
+         * Localchain terpilih yang menurut Collector adalah localchain
+         * dengan panjang rantai terbesar.
+         */
+        private Localchain selectedLocalchain;
+    /* ---------------------------------------------------------------------- */
     
+        
+        
      /* ----------------------- FIELD INTERNET ----------------------- */
-    private Blockchain mainChain;
+        /**
+         * Blockchain utama yang berada di Internet.
+         */
+        private Blockchain mainChain;
     /* --------------------------------------------------------------- */
 
 
@@ -105,15 +190,15 @@ public class DTNHost implements Comparable<DTNHost> {
         this.location = new Coord(0, 0);
         this.address = getNextAddress();
         this.name = groupId + address;
-        this.net = new ArrayList<NetworkInterface>();
+        this.net = new ArrayList<>();
 
         for (NetworkInterface i : interf) {
             NetworkInterface ni = i.replicate();
             ni.setHost(this);
             net.add(ni);
         }
-
-        // HASHSET UNTUK MENANDAKAN MINER SUDAH DIKUNJUNGI
+        
+        /* Inisialisasi untuk Operator Proxy */
         if (this.name.startsWith("ope")) {
             this.trx = new ArrayList<>();
             this.transactionBuffer = new ArrayList<>();
@@ -123,17 +208,15 @@ public class DTNHost implements Comparable<DTNHost> {
             this.hasGrouped = false;
             this.rewardedMiner = new HashSet<>();
         }
-
+        
+        /* Inisialisasi untuk Home */
         if (this.name.startsWith("hom")) {
             this.storedLocalchains = new ArrayList<>();
             this.visitedOperatorProxy = new HashSet<>();
             this.readyToStore = false;
         }
-
-        if (this.name.startsWith("col")) {
-            this.completedLocalchains = new ArrayList<>();
-            
-        }
+        
+        /* Inisialisasi untuk Miner */
         if (this.name.startsWith("min")) {
             this.wallet = new Wallet();
         }
@@ -160,24 +243,25 @@ public class DTNHost implements Comparable<DTNHost> {
         }
     }
 
-    public List<Transaction> getTransactionBuffer() {
-        return transactionBuffer;
-    }
 
-    public void setTransactionBuffer(List<Transaction> transactionBuffer) {
-        this.transactionBuffer = transactionBuffer;
-    }
-
+    /**
+     * Menambahkan transaksi yang telah dibangkitkan miner ke buffer milik
+     * Operator Proxy untuk diproses nanti. Saat sudah mecapai periode tertentu,
+     * semua transaksi akan dibungkus menjadi kelompok-kelompok terpisah.
+     * @param trx Transaksi yang dibuat oleh miner.
+     */
     public void addTransactionToBuffer(Transaction trx) {
         transactionBuffer.add(trx);
 
-//        System.out.println(name);
-        
-        if (SimClock.getTime() > 9000 && SimClock.getTime() < 20000) { //ope 7 selesai bungkus di 20000 ms
-            groupTransactions();
+        if (SimClock.getTime() > 9000 
+                && SimClock.getTime() < 20000) {
+            groupTransactions(); // kelompokkan transaksi
         }
     }
     
+    /**
+     * Mengelompokkan transaksi 
+     */
     public void groupTransactions() {
         if (!hasGrouped) {
             while (!transactionBuffer.isEmpty()) {
@@ -200,103 +284,66 @@ public class DTNHost implements Comparable<DTNHost> {
             this.hasGrouped = true;
         }
     }
-
     
-    public Blockchain getMainChain() {
-        return mainChain;
-    }
+    /**
+     * Penanda bahwa Operator Proxy siap melakukan storing Localchain ke Home.
+     * @return true jika list trx Operator Proxy empty.
+     */
+    public boolean isReadyToStore() {return readyToStore;}
 
-    public void setMainChain(Blockchain mainChain) {
-        this.mainChain = mainChain;
-    }
+    /**
+     * Penanda bahwa Operator Proxy siap membagikan fee ke para miner yang
+     * berhasil berkontribusi dalam proses mining.
+     * @return true jika telah bertemu Home dan sudah diinfokan dari Collector
+     * bahwa appending telah selesai.
+     */
+    public boolean isAppendingDone() {return appendingDone;}
     
-    public Localchain getSelectedLocalchain() {
-        return selectedLocalchain;
-    }
-
-    public void setSelectedLocalchain(Localchain selectedLocalchain) {
-        this.selectedLocalchain = selectedLocalchain;
-    }
-
-    public Set<DTNHost> getRewardedMiners() {
-        return rewardedMiner;
-    }
-
-    public void setRewardedMiner(Set<DTNHost> rewardedMiner) {
-        this.rewardedMiner = rewardedMiner;
-    }
+    public void setReadyToStore(boolean readyToStore) {this.readyToStore = readyToStore;}
     
-    public Wallet getWallet() {
-        return wallet;
-    }
+    public void setAppendingDone(boolean appendingDone) {this.appendingDone = appendingDone;}
+
+    public List<Transaction> getTransactionBuffer() {return transactionBuffer;}
+
+    public void setTransactionBuffer(List<Transaction> transactionBuffer) {this.transactionBuffer = transactionBuffer;}
     
-    public boolean isAppendingDone() {
-        return appendingDone;
-    }
+    public Blockchain getMainChain() {return mainChain;}
 
-    public void setAppendingDone(boolean appendingDone) {
-        this.appendingDone = appendingDone;
-    }
+    public void setMainChain(Blockchain mainChain) {this.mainChain = mainChain;}
     
-    public boolean isReadyToStore() {
-        return readyToStore;
-    }
+    public Localchain getSelectedLocalchain() {return selectedLocalchain;}
 
-    public void setReadyToStore(boolean readyToStore) {
-        this.readyToStore = readyToStore;
-    }
+    public void setSelectedLocalchain(Localchain selectedLocalchain) {this.selectedLocalchain = selectedLocalchain;}
 
-    public List<Localchain> getStoredLocalchains() {
-        return storedLocalchains;
-    }
+    public Set<DTNHost> getRewardedMiners() { return rewardedMiner;}
 
-    public Set<DTNHost> getVisitedOperatorProxy() {
-        return visitedOperatorProxy;
-    }
+    public void setRewardedMiner(Set<DTNHost> rewardedMiner) {this.rewardedMiner = rewardedMiner;}
+    
+    public Wallet getWallet() {return wallet;}
 
-    public List<Localchain> getCompletedLocalchains() {
-        return completedLocalchains;
-    }
+    public List<Localchain> getStoredLocalchains() {return storedLocalchains;}
 
-    public int getV() {
-        return v;
-    }
+    public Set<DTNHost> getVisitedOperatorProxy() {return visitedOperatorProxy;}
 
-    public void setV(int v) {
-        this.v = v;
-    }
+    public int getV() {return v;}
 
-    public Block getSelectedBlock() {
-        return selectedBlock;
-    }
+    public void setV(int v) {this.v = v;}
 
-    public void setSelectedBlock(Block selectedBlock) {
-        this.selectedBlock = selectedBlock;
-    }
+    public Block getSelectedBlock() {return selectedBlock;}
 
-    public List<List<Transaction>> getTrx() {
-        return trx;
-    }
+    public void setSelectedBlock(Block selectedBlock) {this.selectedBlock = selectedBlock;}
 
-    public void setTrx(List<List<Transaction>> trx) {
-        this.trx = trx;
-    }
+    public List<List<Transaction>> getTrx() {return trx;}
 
-    public Localchain getLocalchain() {
-        return localchain;
-    }
+    public void setTrx(List<List<Transaction>> trx) {this.trx = trx;}
 
-    public void setLocalchain(Localchain localchain) {
-        this.localchain = localchain;
-    }
+    public Localchain getLocalchain() {return localchain;}
 
-    public Set<DTNHost> getVisitedMiner() {
-        return visitedMiner;
-    }
+    public void setLocalchain(Localchain localchain) {this.localchain = localchain;}
 
-    public void setVisitedMiner(Set <DTNHost> visitedMiner) {
-        this.visitedMiner = visitedMiner;
-    }
+    public Set<DTNHost> getVisitedMiner() {return visitedMiner;}
+
+    public void setVisitedMiner(Set <DTNHost> visitedMiner) {this.visitedMiner = visitedMiner;}
 
     /**
      * Returns a new network interface address and increments the address for
@@ -345,6 +392,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
     /**
      * Returns the network-layer address of this host.
+     * @return 
      */
     public int getAddress() {
         return this.address;
@@ -383,7 +431,7 @@ public class DTNHost implements Comparable<DTNHost> {
      * @return a copy of the list of connections this host has with other hosts
      */
     public List<Connection> getConnections() {
-        List<Connection> lc = new ArrayList<Connection>();
+        List<Connection> lc = new ArrayList<>();
 
         for (NetworkInterface i : net) {
             lc.addAll(i.getConnections());
@@ -471,6 +519,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
     /**
      * Returns the interface objects of the node
+     * @return List interface
      */
     public List<NetworkInterface> getInterfaces() {
         return net;
@@ -478,6 +527,8 @@ public class DTNHost implements Comparable<DTNHost> {
 
     /**
      * Find the network interface based on the index
+     * @param interfaceNo
+     * @return 
      */
     protected NetworkInterface getInterface(int interfaceNo) {
         NetworkInterface ni = null;
@@ -492,6 +543,8 @@ public class DTNHost implements Comparable<DTNHost> {
 
     /**
      * Find the network interface based on the interfacetype
+     * @param interfacetype
+     * @return 
      */
     protected NetworkInterface getInterface(String interfacetype) {
         for (NetworkInterface ni : net) {
@@ -504,6 +557,9 @@ public class DTNHost implements Comparable<DTNHost> {
 
     /**
      * Force a connection event
+     * @param anotherHost
+     * @param interfaceId
+     * @param up
      */
     public void forceConnection(DTNHost anotherHost, String interfaceId,
             boolean up) {
@@ -533,6 +589,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
     /**
      * for tests only --- do not use!!!
+     * @param h
      */
     public void connect(DTNHost h) {
         System.err.println(
@@ -718,6 +775,7 @@ public class DTNHost implements Comparable<DTNHost> {
      *
      * @return Host's name
      */
+    @Override
     public String toString() {
         return name;
     }
@@ -736,8 +794,11 @@ public class DTNHost implements Comparable<DTNHost> {
     /**
      * Compares two DTNHosts by their addresses.
      *
+     * @param h
+     * @return 
      * @see Comparable#compareTo(Object)
      */
+    @Override
     public int compareTo(DTNHost h) {
         return this.getAddress() - h.getAddress();
     }
