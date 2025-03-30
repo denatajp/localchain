@@ -43,7 +43,11 @@ public class DTNHost implements Comparable<DTNHost> {
     private List<NetworkInterface> net;
     private ModuleCommunicationBus comBus;
     
-    
+    /**
+     * Penanda untuk Collector, Home, dan Operator Proxy 
+     * bahwa proses appending telah siap dan lanjut
+     * proses selanjutnya yaitu rewarding ke miner.
+     */
     private boolean appendingDone = false;
     
     /* -------------------------- FIELD MINER ------------------------------- */
