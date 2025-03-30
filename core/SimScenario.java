@@ -28,8 +28,9 @@ public class SimScenario implements Serializable {
      * a way to get a hold of this...
      */
     private static SimScenario myinstance = null;
-
-    public static final String TRANSAKSI_AWAL = "transaksiAwal";
+    /**
+     * namespace of scenario settings ({@value})
+     */
     public static final String DIFFICULTY = "difficulty";
     /**
      * namespace of scenario settings ({@value})
@@ -142,8 +143,13 @@ public class SimScenario implements Serializable {
      */
     private static final String APP_PACKAGE = "applications.";
 
-    private int transaksiAwal;
+    /**
+     * Tingkat kesulitan mining di Blockchain maupun Localchain
+     */
     private int difficulty;
+    /**
+     * Counter untuk algoritma appending.
+     */
     public int localChainCount = 8;
     /**
      * The world instance
@@ -194,10 +200,6 @@ public class SimScenario implements Serializable {
      */
     private SimMap simMap;
 
-//    public Map<Localchain,DTNHost> getLocalChains() {
-//        return localChains;
-//    }
-
     /**
      * Global connection event listeners
      */
@@ -240,7 +242,6 @@ public class SimScenario implements Serializable {
         this.updateInterval = s.getDouble(UP_INT_S);
         this.simulateConnections = s.getBoolean(SIM_CON_S);
 
-        this.transaksiAwal = s.getInt(TRANSAKSI_AWAL);
         this.difficulty = s.getInt(DIFFICULTY);
 
         ensurePositiveValue(nrofGroups, NROF_GROUPS_S);
@@ -250,11 +251,11 @@ public class SimScenario implements Serializable {
         this.simMap = null;
         this.maxHostRange = 1;
 
-        this.connectionListeners = new ArrayList<ConnectionListener>();
-        this.messageListeners = new ArrayList<MessageListener>();
-        this.movementListeners = new ArrayList<MovementListener>();
-        this.updateListeners = new ArrayList<UpdateListener>();
-        this.appListeners = new ArrayList<ApplicationListener>();
+        this.connectionListeners = new ArrayList<>();
+        this.messageListeners = new ArrayList<>();
+        this.movementListeners = new ArrayList<>();
+        this.updateListeners = new ArrayList<>();
+        this.appListeners = new ArrayList<>();
         this.eqHandler = new EventQueueHandler();
 
         /* TODO: check size from movement models */
@@ -272,6 +273,7 @@ public class SimScenario implements Serializable {
 
     /**
      * Returns the SimScenario instance and creates one if it doesn't exist yet
+     * @return the SimScenario object
      */
     public static SimScenario getInstance() {
         if (myinstance == null) {
@@ -448,11 +450,11 @@ public class SimScenario implements Serializable {
      * Creates hosts for the scenario
      */
     protected void createHosts() {
-        this.hosts = new ArrayList<DTNHost>();
+        this.hosts = new ArrayList<>();
 
         for (int i = 1; i <= nrofGroups; i++) {
             List<NetworkInterface> mmNetInterfaces
-                    = new ArrayList<NetworkInterface>();
+                    = new ArrayList<>();
             Settings s = new Settings(GROUP_NS + i);
             s.setSecondaryNamespace(GROUP_NS);
             String gid = s.getSetting(GROUP_ID_S);
@@ -521,23 +523,26 @@ public class SimScenario implements Serializable {
             for (int j = 0; j < nrofHosts; j++) {
                 ModuleCommunicationBus comBus = new ModuleCommunicationBus();
 
-                // prototypes are given to new DTNHost which replicates
-                // new instances of movement model and message router
+                /*
+                    prototypes are given to new DTNHost which replicates
+                    new instances of movement model and message router
+                */
                 DTNHost host = new DTNHost(this.messageListeners,
                         this.movementListeners, gid, mmNetInterfaces, comBus,
                         mmProto, mRouterProto);
 
+                /* buat inisialisasi Localchain tiap Operator Proxy */
                 if (isOperatorProxy(host)) {
-//                    List<List<Transaction>> list = Inisialisasi.inisialisasi(this.transaksiAwal);
-//                    host.setTrx(list);
                     host.setLocalchain(new Localchain(this.difficulty));
                     host.getLocalchain().setName("Localchain " + host.toString());
                 }
                 
-                if (host.toString().startsWith("int")) {
+                /* buat inisialisasi Blockchain pada internet */
+                if (isInternet(host)) {
                     Blockchain existingBlockchain = new Blockchain(this.difficulty);
                     host.setMainChain(existingBlockchain);
                 }
+                
                 hosts.add(host);
             }
 
@@ -548,6 +553,10 @@ public class SimScenario implements Serializable {
         return host.toString().startsWith("ope");
     }
 
+    private boolean isInternet(DTNHost host) {
+        return host.toString().startsWith("int");
+    }
+    
     /**
      * Returns the list of nodes for this scenario.
      *
