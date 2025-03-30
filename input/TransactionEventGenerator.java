@@ -15,9 +15,7 @@ import java.security.PublicKey;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Message creation -external events generator. Creates uniformly distributed
- * message creation patterns whose message size and inter-message intervals can
- * be configured.
+ * Generate Event pembuatan pesan yang berisi transaksi.
  */
 public class TransactionEventGenerator implements EventQueue {
 
@@ -198,36 +196,43 @@ public class TransactionEventGenerator implements EventQueue {
     }
 
     /**
-     * Draws a destination host address that is different from the "from"
-     * address
+     * Buat tujuan pesan berdasarkan area masing-masing. Tujuan selalu
+     * ditujukan ke Operator Proxy di setiap areanya.
      *
-     * @param from the "from" address
-     * @return a destination address from the range, but different from "from"
+     * @param from ID pengirim untuk dilihat area berapa
+     * @return ID penerima (Operator Proxy) berdasarkan areanya
      */
     protected int drawToAddress(int from) {
         int to;
 
-        if (from >= 1 && from <= 7) {
+        if (from >= 1 && from <= 7) {   // area 1
             to = 57;
-        } else if (from <= 14) {
+        } else if (from <= 14) {        // area 2
             to = 58;
-        } else if (from <= 21) {
+        } else if (from <= 21) {        // area 3
             to = 59;
-        } else if (from <= 28) {
+        } else if (from <= 28) {        // area 4      
             to = 60;
-        } else if (from <= 35) {
+        } else if (from <= 35) {        // area 5
             to = 61;
-        } else if (from <= 42) {
+        } else if (from <= 42) {        // area 6
             to = 62;
-        } else if (from <= 49) {
+        } else if (from <= 49) {        // area 7
             to = 63;
-        } else {
+        } else {                        // area 8
             to = 64;
         }
 
         return to;
     }
-        protected int drawToAddressTrx(int from) {
+    
+    /**
+     * Buat tujuan transaksi. Berbeda dengan pesan, karena transaksi bisa
+     * di luar area, jadi pada simulasi ini random miner di area mana saja.
+     * @param from ID pengirim
+     * @return ID penerima (miner 1-56) tapi bukan dirinya sendiri
+     */
+    protected int drawToAddressTrx(int from) {
             int to;
             do {
                 to = 1+rng.nextInt(56);
@@ -236,36 +241,41 @@ public class TransactionEventGenerator implements EventQueue {
         return to;
     }
 
-
     /**
-     * Returns the next message creation event
+     * Bangkitkan event pembuatan pesan
      *
      * @see input.EventQueue#nextEvent()
      */
     @Override
     public ExternalEvent nextEvent() {
+        
+        // Inisialisasi property pesan
         int responseSize = 0;
         int msgSize =drawMessageSize() ;
         int interval= drawNextEventTimeDiff();
-        int from= drawHostAddress(this.hostRange);;
-        int to= drawToAddress(from);;
-
-             
+        int from= drawHostAddress(this.hostRange);
+        int to= drawToAddress(from);
+        
+        //Akses Public dan Private key penerima dan pengirim untuk proses kriptografi
         DTNHost senderHost = SimScenario.getInstance().getHosts().get(from);
         DTNHost receiverHost = SimScenario.getInstance().getHosts().get(drawToAddressTrx(from));
         PublicKey senderPublicKey = senderHost.getWallet().getPublicKey();
         PublicKey receiverPublicKey = receiverHost.getWallet().getPublicKey();
+        
+        // Pastikan hanya miner saja yang dapat membangkitkan transaksi
         if (!senderHost.toString().startsWith("min") || senderHost.getWallet() == null) {
             return null;
         }
+        
+        // Inisialisasi property transaksi
         double amount = ThreadLocalRandom.current().nextDouble(10, 1000);
         long timestamp = System.currentTimeMillis();
         
+        // Bangkitkan transaksi
         Transaction tr = new Transaction(senderPublicKey, receiverPublicKey, amount, timestamp);
         tr.generateSignature(senderHost.getWallet().getPrivateKey());
         TransactionCreateEvent tce = new TransactionCreateEvent(from, to, "TRX" + eventCount++,
                 msgSize, responseSize, this.nextEventsTime, tr);
-        
         
         this.nextEventsTime += interval;
 
