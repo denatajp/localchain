@@ -250,6 +250,7 @@ public abstract class MovementModel {
 	 * Returns simply the name of the movement model class
 	 * @return the name of the movement model class
 	 */
+        @Override
 	public String toString() {
 		return this.getClass().getSimpleName();
 	}
