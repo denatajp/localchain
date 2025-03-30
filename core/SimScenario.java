@@ -5,27 +5,19 @@
 package core;
 
 import Blockchain.Blockchain;
-import Blockchain.Inisialisasi;
 import Blockchain.Localchain;
-import Blockchain.Transaction;
 import input.EventQueue;
 import input.EventQueueHandler;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.map.SimMap;
 import routing.MessageRouter;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+
 /**
  * A simulation scenario used for getting and storing the settings of a
  * simulation run.

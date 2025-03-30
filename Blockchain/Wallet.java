@@ -5,41 +5,55 @@ import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 
+/**
+ * Class Wallet merupakan dompet digital yang dimiliki tiap miner
+ * @author Denata
+ */
 public class Wallet {
-    private PrivateKey privateKey; // Untuk menandatangani transaksi
-    private PublicKey publicKey;   // Sebagai alamat wallet
-    private double balance;        // Saldo wallet
+    
+    /**
+     * Private Key digunakan untuk menandatangani transaksi dan hanya
+     * bisa diakses oleh miner itu sendiri. Anggap seperti PIN pribadi.
+     */
+    private PrivateKey privateKey;
+    
+    /**
+     * Public Key digunakan sebagai identitas dompet, bisa diakses oleh pihak
+     * lain. Anggap seperti nomor rekening jika ingin mengirim uang.
+     */
+    private PublicKey publicKey; 
+    
+    /**
+     * Saldo wallet
+     */
+    private double balance;    
+    
     static {
-        Security.addProvider(new BouncyCastleProvider()); // Pastikan BC terdaftar
+        /* Pastikan Bouncy Castle terdaftar */
+        Security.addProvider(new BouncyCastleProvider()); 
     }
+    
+    /**
+     * Saat sebuah wallet dibuat pertama kali, akan membuat pasangan kunci
+     * yaitu PrivateKey dan PublicKey
+     */
     public Wallet() {
-        
         generateKeyPair();
-        this.balance = 0; // Saldo awal
+        this.balance = 0; // set saldo awal 0
     }
 
     /**
-     * Generate pasangan public key dan private key.
-     */
-//    private void generateKeyPair() {
-//        try {
-//            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-//            keyGen.initialize(2048);
-//            KeyPair pair = keyGen.generateKeyPair();
-//            this.privateKey = pair.getPrivate();
-//            this.publicKey = pair.getPublic();
-//        } catch (Exception e) {
-//            throw new RuntimeException("Failed to generate key pair", e);
-//        }
-//    }
-
+    * Bikin pasangan kunci (public & private) pake ECDSA
+    */
     private void generateKeyPair() {
         try {
-            // 1. Gunakan algoritma "ECDSA", bukan "RSA"
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA", "BC"); // Provider BC
+            // 1. Gunakan algoritma "ECDSA"
+            KeyPairGenerator keyGen = KeyPairGenerator.
+                                      getInstance("ECDSA", "BC"); // Provider BC
 
             // 2. Pilih kurva elliptic (contoh: secp256k1 untuk Bitcoin)
-            ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256k1");
+            ECParameterSpec ecSpec = ECNamedCurveTable.
+                                     getParameterSpec("secp256k1");
             keyGen.initialize(ecSpec);
 
             // 3. Generate key pair
@@ -51,28 +65,19 @@ public class Wallet {
         }
     }
     
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-
-    public PrivateKey getPrivateKey() {
-        return privateKey;
-    }
-
-    public double getBalance() {
-        return balance;
-    }
-
+    /**
+    * Nambahin saldo (misal pas nerima transaksi)
+    * @param amount Jumlah yang mau ditambah
+    */
     public void addBalance(double amount) {
         this.balance += amount;
     }
+    
+    public PublicKey getPublicKey() {return publicKey;}
 
-    public void deductBalance(double amount) {
-        if (amount > this.balance) {
-            throw new IllegalArgumentException("Insufficient balance");
-        }
-        this.balance -= amount;
-    }
+    public PrivateKey getPrivateKey() {return privateKey;}
+
+    public double getBalance() {return balance;}
 
     @Override
     public String toString() {
