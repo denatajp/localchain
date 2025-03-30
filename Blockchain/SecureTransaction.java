@@ -2,12 +2,25 @@ package Blockchain;
 
 import java.security.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+/**
+ * SecureTransaction digunakan untuk mengurusi kriptografi dalam setiap
+ * transaksi. Mulai dari hash SHA256 sampai membuat tanda tanngan digital
+ * ECDSA
+ * @author Denata
+ */
 public class SecureTransaction {
-        static {
-        // Daftarkan provider Bouncy Castle
+    
+    static {
+        /* Daftarkan provider Bouncy Castle */
         Security.addProvider(new BouncyCastleProvider());
     }
-    // Generate hash SHA-256
+    
+    /**
+    * Bikin hash SHA-256 dari input (buat hash transaksi)
+    * @param input - Data yang mau di-hash
+    * @return Hash dalam bentuk hex string
+    */
     public static String applySha256(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -24,6 +37,12 @@ public class SecureTransaction {
         }
     }
 
+    /**
+    * Bikin tanda tangan digital pake private key
+    * @param privateKey Kunci pribadi si pengirim
+    * @param input Data yang mau ditandatangani
+    * @return Tanda tangan dalam bentuk byte array
+    */
      public static byte[] applyECDSASig(PrivateKey privateKey, String input) {
         try {
             Signature dsa = Signature.getInstance("ECDSA", "BC");
@@ -35,6 +54,13 @@ public class SecureTransaction {
         }
     }
 
+    /**
+    * Mengecek apakah tanda tangan valid pakai public key
+    * @param publicKey Kunci publik si pengirim
+    * @param data Data asli yang ditandatangani
+    * @param signature Tanda tangan yang mau dicek
+    * @return true kalo tanda tangan valid
+    */
     public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
         try {
             Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
@@ -47,7 +73,12 @@ public class SecureTransaction {
     }
 
     
-    // Konversi Key ke String
+    /**
+    * Mengubah key (public/private) jadi string biar gampang disimpen
+    * menggunakan Base64
+    * @param key Kunci Publik atau Kunci Private
+    * @return 
+    */
     public static String getStringFromKey(Key key) {
         return java.util.Base64.getEncoder().encodeToString(key.getEncoded());
     }

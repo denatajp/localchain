@@ -1,9 +1,12 @@
 package Blockchain;
 
-import core.SimScenario;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Blockchain digunakan sebagai rantai utama yang tersimpan di Internet
+ * @author Denata
+ */
 public class Blockchain {
 
     private List<Block> chain;
@@ -14,6 +17,10 @@ public class Blockchain {
         this.difficulty = difficulty;
     }
 
+    /**
+    * Ambil block terakhir di chain. Kalo kosong, return block kosong
+    * @return objek blok paling terakhir
+    */
     public Block getLatestBlock() {
         if (chain.isEmpty()) {
             return new Block();
@@ -21,10 +28,18 @@ public class Blockchain {
         return chain.get(chain.size() - 1);
     }
 
+    /**
+     * Menambahkahkan blok baru ke blockchain
+     * @param newBlock Blok yang akan ditambah
+     */
     public void addBlock(Block newBlock) {
         chain.add(newBlock);
     }
 
+    /**
+     * Menambahkan block dari local chain ke blockchain utama
+     * @param localChain - Chain lokal yang mau diambil block-nya
+     */
     public void addBlockFromLocalChain(Localchain localChain) {
         List<Block> blockFromLocalchain = new ArrayList<>(localChain.getChain());
 
@@ -33,35 +48,6 @@ public class Blockchain {
             b.setPreviousHash(previousHash);
             b.recalculateHash(difficulty);
             addBlock(b);
-        }
-    }
-
-    public boolean isChainValid() {
-        for (int i = 1; i < chain.size(); i++) {
-            Block currentBlock = chain.get(i);
-            Block previousBlock = chain.get(i - 1);
-
-            // Periksa apakah hash saat ini masih valid
-            if (!currentBlock.getHash().equals(currentBlock.calculateHash())) {
-                return false;
-            }
-
-            // Periksa apakah hash sebelumnya cocok dengan hash blok sebelumnya
-            if (!currentBlock.getPreviousHash().equals(previousBlock.getHash())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public void printBlockchain() {
-        for (Block block : chain) {
-//            System.out.println("Index       : " + block.getIndex());
-//            System.out.println("Timestamp   : " + block.getTimestamp());
-//            System.out.println("Data        : " + block.getData());
-            System.out.println("Hash        : " + block.getHash());
-            System.out.println("Prev Hash   : " + block.getPreviousHash());
-            System.out.println("-------------------------------");
         }
     }
 

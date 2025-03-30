@@ -4,8 +4,6 @@
  */
 package input;
 
-import Blockchain.Inisialisasi;
-import Blockchain.SecureTransaction;
 import Blockchain.Transaction;
 import core.DTNHost;
 import java.util.Random;
