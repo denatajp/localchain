@@ -240,7 +240,7 @@ public class DTNHost implements Comparable<DTNHost> {
         }
 
         // TODO - think about the names of the interfaces and the nodes
-        //this.name = groupId + ((NetworkInterface)net.get(1)).getAddress();
+        // this.name = groupId + ((NetworkInterface)net.get(1)).getAddress();
         this.msgListeners = msgLs;
         this.movListeners = movLs;
 
@@ -271,7 +271,7 @@ public class DTNHost implements Comparable<DTNHost> {
     public void addTransactionToBuffer(Transaction trx) {
         transactionBuffer.add(trx);
 
-        if (SimClock.getTime() > 9000 
+        if (SimClock.getTime() > 10000 
                 && SimClock.getTime() < 20000) {
             groupTransactions(); // kelompokkan transaksi
         }

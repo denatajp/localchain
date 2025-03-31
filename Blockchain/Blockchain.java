@@ -54,7 +54,7 @@ public class Blockchain {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("==== BLOCKCHAIN ====\n");
+        sb.append("\n==== BLOCKCHAIN ====\n");
 
         for (Block block : chain) {
             sb.append("Prev Hash: ").append(block.getPreviousHash()).append("\n")

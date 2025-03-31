@@ -20,8 +20,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      * For Report purpose, maybe needed some variable
      */
     protected LinkedList<Double> resourcesList;
-//    public static final String TOTAL_CONTACT_INTERVAL = "perTotalContact";
-//    public static final int DEFAULT_CONTACT_INTERVAL = 300;
     private static final String THRESHOLD = "threshold";
     private static final int DEFAULT_THRESHOLD = 6;
     private Double lastRecord = Double.MIN_VALUE;
@@ -31,11 +29,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     public EpidemicDecisionRouterBlockchain(Settings s) {
         minedBlock = new ArrayList<>();
-//        if (s.contains(TOTAL_CONTACT_INTERVAL)) {
-//            interval = s.getInt(TOTAL_CONTACT_INTERVAL);
-//        } else {
-//            interval = DEFAULT_CONTACT_INTERVAL;
-//        }
 
         if (s.contains(THRESHOLD)) {
             threshold = s.getInt(THRESHOLD);
@@ -153,13 +146,16 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      * mencatat waktu penambangan. Blok dengan hasil terbaik kemudian dipilih
      * dan disimpan dalam rantai blok lokal (Localchai).
      *
-     * Algoritma bekerja dengan langkah-langkah: 1. Operator Proxy memilih
-     * daftar transaksi terbaik dari kumpulan transaksi yang ada 2. Menugaskan
-     * proses penambangan ke Miner yang belum pernah ditugaskan sebelumnya 3.
-     * Miner melakukan proses penambangan (proof-of-work) dan mencatat waktu
-     * yang dibutuhkan 4. Setelah 7 Miner berpartisipasi, blok dengan waktu
-     * penambangan terbaik akan dipilih 5. Blok terpilih ditambahkan ke rantai=
-     * blok lokal dan daftar transaksi diperbarui
+     * Algoritma bekerja dengan langkah-langkah: 
+     * 1. Operator Proxy memilih daftar transaksi terbaik dari kumpulan 
+     *    transaksi yang ada.
+     * 2. Menugaskan proses penambangan ke Miner yang belum pernah ditugaskan 
+     *    sebelumnya.
+     * 3. Miner melakukan proses penambangan (proof-of-work) dan mencatat waktu
+     *    yang dibutuhkan.
+     * 4. Setelah 7 Miner berpartisipasi, blok dengan waktu mining terbaik 
+     *    akan dipilih.
+     * 5. Blok terpilih ditambahkan ke Localchain dan daftar transaksi diperbarui
      *
      * @param host DTNHost yang bertindak sebagai Operator Proxy untuk mengelola
      * proses penambangan
@@ -168,35 +164,46 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      */
     private void mining_algorithmOne(DTNHost host, DTNHost peer) {
         if (isOperatorProxy(host)) {
+            
+            List<List<Transaction>> trx = host.getTrx();
+            Localchain localChain = host.getLocalchain();
+            String previousHash = localChain.getLatestBlock().getHash();
 
+            // proses mining terus berjalan selama list trx OP masih ada
             if (host.getSelectedBlock() == null && !host.getTrx().isEmpty()) {
-
-                List<List<Transaction>> trx = host.getTrx();
-                Localchain localChain = host.getLocalchain();
-                String previousHash = localChain.getLatestBlock().getHash();
 
                 if (isMiner(peer)) {
 
-                    if (!host.getVisitedMiner().contains(peer)) { // jika baru pertama kali bertemu
-
+                    // datangi setiap miner yang baru pertama kali bertemu
+                    if (!host.getVisitedMiner().contains(peer)) { 
                         host.getVisitedMiner().add(peer);
 
+                        // pilih transaksi terbaik, tiap miner pasti memilih transaksi yang sama
                         int indexBestTRX = getBestTranx(trx);
                         List<Transaction> bestTransactionList = new ArrayList<>(trx.get(indexBestTRX));
+                        
+                        // cek tiap transaksi yang ada di list yang miner pilih
                         for (int i = 0; i < bestTransactionList.size(); i++) {
+                            
+                            // periksa validitas tanda tangan digital tranasaksi
                             if (!bestTransactionList.get(i).verifySignature()) {
-                                System.out.println("Transaksi " + bestTransactionList.get(i).getTransactionHash() + " tidak valid!");
+                                System.out.println("Transaksi " 
+                                        + bestTransactionList.get(i).getTransactionHash() 
+                                        + " tidak valid!");
                                 bestTransactionList.remove(i);
                             }
                         }
-                        Block b = new Block(previousHash, bestTransactionList, System.currentTimeMillis());
+                        
+                        // bungkus transaksi ke sebuah blok
+                        Block b = new Block(previousHash, 
+                                bestTransactionList, 
+                                System.currentTimeMillis());
                         b.setFee(getFee(bestTransactionList));
                         b.setMinedBy(peer);
 
+                        // mining blok (menebak nilai nonce)
                         long begin = System.currentTimeMillis();
-
                         b.mineBlock(localChain.getDifficulty());
-
                         long end = System.currentTimeMillis();
                         long time = end - begin;
 
@@ -206,15 +213,21 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     }
                 }
 
+                /* Saat sebuah transaksi yang sama sudah dibentuk blok
+                *  oleh 7 miner (per area ada 7), maka OperatorProxy bertugas
+                *  mencari minedBlock terbaik untuk dipilih ke selectedBlock
+                */
                 if (host.getVisitedMiner().size() == 7) {
 
+                    // reset catatan kedatangan untuk transaksi-transaksi selanjutnya
                     host.getVisitedMiner().clear();
 
+                    // hapus transaksi terpilih dari list trx OperatorProxy
                     int indexBestTRX = getBestTranx(trx);
                     host.getTrx().remove(indexBestTRX);
 
+                    // pilih blok terbaik, masukkan ke selectedBlock
                     int index = getBestMinedBlock(minedBlock);
-
                     Block selectedBlock = new Block(minedBlock.get(index));
                     host.setSelectedBlock(selectedBlock);
 
@@ -251,7 +264,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                 if (isMiner(peer)) {
 
-                    if (!host.getVisitedMiner().contains(peer)) {// jika baru pertama kali bertemu
+                    if (!host.getVisitedMiner().contains(peer)) {
 
                         host.getVisitedMiner().add(peer);
 
