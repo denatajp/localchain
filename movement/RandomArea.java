@@ -9,16 +9,20 @@ import core.Settings;
 import static movement.MovementModel.rng;
 
 /**
- * Random waypoint movement model. Creates zig-zag paths within the simulation
- * area.
+ * Improvisasi dari RandomWaypoint, di sini menggunakan moveArea sehingga
+ * pergerakan tetap random namun dibatasi oleh area-area tertentu.
  */
 public class RandomArea extends MovementModel {
 
+    /**
+    * area lokasi node -setting id ({@value})
+    */
     public static final String MOVE_AREA = "moveArea";
     /**
      * how many waypoints should there be per path
      */
     private static final int PATH_LENGTH = 1;
+    
     private Coord lastWaypoint;
 
     public RandomArea(Settings settings) {
@@ -69,53 +73,58 @@ public class RandomArea extends MovementModel {
                 rng.nextDouble() * getMaxY());
     }
 
+    /**
+     * Bangkitkan koordinat berdasarkan area
+     * @param area area node berada
+     * @return koordinat kemana node akan jalan selanjutnya
+     */
     protected Coord randomCoord(int area) {
         double minX, maxX, minY, maxY;
 
         switch (area) {
-            case 1:
+            case 1:             // area 1 miner
                 minX = 0;
                 maxX = 333;
                 minY = 0;
                 maxY = 333;
                 break;
-            case 2:
+            case 2:             // area 2 miner
                 minX = 333;
                 maxX = 666;
                 minY = 0;
                 maxY = 333;
                 break;
-            case 3:
+            case 3:             // area 3 miner
                 minX = 666;
                 maxX = 1000;
                 minY = 0;
                 maxY = 333;
                 break;
-            case 4:
+            case 4:             // area 4 miner
                 minX = 0;
                 maxX = 333;
                 minY = 333;
                 maxY = 666;
                 break;
-            case 5:
+            case 5:             // area 5 miner
                 minX = 666;
                 maxX = 1000;
                 minY = 333;
                 maxY = 666;
                 break;
-            case 6:
+            case 6:             // area 6 miner
                 minX = 0;
                 maxX = 333;
                 minY = 666;
                 maxY = 1000;
                 break;
-            case 7:
+            case 7:             // area 7 miner
                 minX = 333;
                 maxX = 666;
                 minY = 666;
                 maxY = 1000;
                 break;
-            case 8:
+            case 8:             // area 8 miner
                 minX = 666;
                 maxX = 1000;
                 minY = 666;
@@ -123,59 +132,59 @@ public class RandomArea extends MovementModel {
                 break;
             case 9:
                 minX = 333;
-                maxX = 666;  // X tetap di tengah
+                maxX = 666;  
                 minY = 333;
-                maxY = 1000;  // Y hanya dalam batas vertikal
+                maxY = 1000;  
                 break;
-            case 10:
+            case 10:            // area 1 operator proxy
                 minX = 0;
                 maxX = 500;
                 minY = 0;
                 maxY = 500;
                 break;
-            case 11:
+            case 11:            // area 2 operator proxy
                 minX = 500;
                 maxX = 500;
                 minY = 0;
                 maxY = 500;
                 break;
-            case 12:
+            case 12:            // area 3 operator proxy
                 minX = 500;
                 maxX = 1000;
                 minY = 0;
                 maxY = 500;
                 break;
-            case 13:
+            case 13:            // area 4 operator proxy
                 minX = 0;
                 maxX = 500;
                 minY = 500;
                 maxY = 500;
                 break;
-            case 14:
+            case 14:            // area 5 operator proxy
                 minX = 500;
                 maxX = 1000;
                 minY = 500;
                 maxY = 500;
                 break;
-            case 15:
+            case 15:            // area 6 operator proxy
                 minX = 0;
                 maxX = 500;
                 minY = 500;
                 maxY = 1000;
                 break;
-            case 16:
+            case 16:            // area 7 operator proxy
                 minX = 500;
                 maxX = 500;
                 minY = 500;
                 maxY = 1000;
                 break;
-            case 17:
+            case 17:            // area 8 operator proxy
                 minX = 500;
                 maxX = 1000;
                 minY = 500;
                 maxY = 1000;
                 break;
-            case 18 : 
+            case 18 :           // collector
                 minX = 500;
                 maxX = 1200;
                 minY = 500;
@@ -184,22 +193,36 @@ public class RandomArea extends MovementModel {
             default:
                 throw new IllegalArgumentException("Area harus antara 1-4 atau 6-9 (area 5 tidak bisa dipilih)");
         }
-//area diagonal case 10, 12, 15, 17
+        
         double x, y;
-        if (area == 10 || area == 17) {
-            x = minX + rng.nextDouble() * (maxX - minX);
-            y = x;
-        } 
-        else if (area == 12){
-            x = minX + rng.nextDouble() * (maxX - minX);
-            y = 1000 - x;
-        } else if ( area == 15) {
-            y = minY + rng.nextDouble() * (maxY - minY);
-            x = 1000 - y;
-        }
-        else {
-            x = minX + rng.nextDouble() * (maxX - minX);
-            y = minY + rng.nextDouble() * (maxY - minY);
+        
+        // setting tambahan case pergerakan diagonal
+        switch (area) {
+            
+            // area 1 dan area 8 (diagonal menurun)
+            case 10:
+            case 17:
+                x = minX + rng.nextDouble() * (maxX - minX);
+                y = x;
+                break;
+                
+            // area 3 (diagonal menaik)
+            case 12:
+                x = minX + rng.nextDouble() * (maxX - minX);
+                y = 1000 - x;
+                break;
+                
+            // area 6 (diagonal menaik)
+            case 15:
+                y = minY + rng.nextDouble() * (maxY - minY);
+                x = 1000 - y;
+                break;
+                
+            // area 2, 4, 5, dan 7 default (horizontal & vertikal)
+            default:
+                x = minX + rng.nextDouble() * (maxX - minX);
+                y = minY + rng.nextDouble() * (maxY - minY);
+                break;
         }
 
         return new Coord(x, y);

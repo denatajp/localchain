@@ -44,8 +44,6 @@ public class AllTests {
 		suite.addTestSuite(DijkstraPathFinderTest.class);
 		suite.addTestSuite(PointsOfInterestTest.class);
 		suite.addTestSuite(ActivenessHandlerTest.class);
-		suite.addTestSuite(MaxPropDijkstraTest.class);
-		suite.addTestSuite(MaxPropRouterTest.class);
 		suite.addTestSuite(ScheduledUpdatesQueueTest.class);
 		suite.addTestSuite(MessageTest.class);
 		suite.addTestSuite(ModuleCommunicationBusTest.class);

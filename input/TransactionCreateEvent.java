@@ -10,7 +10,8 @@ import core.Message;
 import core.World;
 
 /**
- * External event for creating a message.
+ * External event untuk pembuatan pesan custom dengan Transaction. Hanya
+ * node miner yang dapat membangkitkan pesan.
  */
 public class TransactionCreateEvent extends MessageEvent {
 
@@ -28,6 +29,7 @@ public class TransactionCreateEvent extends MessageEvent {
      * @param responseSize Size of the requested response message or 0 if no
      * response is requested
      * @param time Time, when the message is created
+     * @param tr Transaction, miner create a transaction
      */
     public TransactionCreateEvent(int from, int to, String id, int size,
             int responseSize, double time, Transaction tr) {
@@ -38,7 +40,7 @@ public class TransactionCreateEvent extends MessageEvent {
     }
 
     /**
-     * Creates the message this event represents.
+     * Bangkitkan pesan khusus node miner saja
      */
     @Override
     public void processEvent(World world) {
@@ -47,9 +49,17 @@ public class TransactionCreateEvent extends MessageEvent {
         
         Message m = new Message(from, to, this.id, this.size);
         m.setResponseSize(this.responseSize);
+        
+        // pastikan objek transaction tidak null
         if (this.tr != null) {
             m.addProperty("transaction", this.tr);
         }
+        
+        /**
+         * Bangkitkan pesan pada node miner, kenapa range ID 1-56? karena
+         * ada 8 area dan masing-masing area ada 7 miner, jadi 8x7 = 56, jadi
+         * ID miner antara 1 sampai 56 saja.
+         */
         if (this.fromAddr != 0 && this.fromAddr <57 ) {
             from.createNewMessage(m);
         }

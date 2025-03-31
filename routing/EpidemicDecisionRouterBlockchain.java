@@ -10,6 +10,7 @@ import core.Settings;
 import core.SimClock;
 import core.SimScenario;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,8 +20,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      * For Report purpose, maybe needed some variable
      */
     protected LinkedList<Double> resourcesList;
-    public static final String TOTAL_CONTACT_INTERVAL = "perTotalContact";
-    public static final int DEFAULT_CONTACT_INTERVAL = 300;
     private static final String THRESHOLD = "threshold";
     private static final int DEFAULT_THRESHOLD = 6;
     private Double lastRecord = Double.MIN_VALUE;
@@ -30,11 +29,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     public EpidemicDecisionRouterBlockchain(Settings s) {
         minedBlock = new ArrayList<>();
-        if (s.contains(TOTAL_CONTACT_INTERVAL)) {
-            interval = s.getInt(TOTAL_CONTACT_INTERVAL);
-        } else {
-            interval = DEFAULT_CONTACT_INTERVAL;
-        }
 
         if (s.contains(THRESHOLD)) {
             threshold = s.getInt(THRESHOLD);
@@ -134,26 +128,16 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
              */
             appending_algorithmFive(host, peer);
 
-            
+            /*
+                Setelah semua localchain sudah diappend ke mainchain, dari
+                Collector memberi kabar ke Home bahwa sudah selesai, lalu
+                Home memberi tahu para operator proxy bahwa sudah selesai dan
+                siap untuk memberi reward ke para miner yang bloknya sudah 
+                terpilih dalam proses mining.
+         */
             reward_algorithmSix(host, peer);
         }
 
-        /*
-            Setelah semua localchain sudah diappend ke mainchain, dari
-            Collector memberi kabar ke Home bahwa sudah selesai, lalu
-            Home memberi tahu para operator proxy bahwa sudah selesai dan
-            siap untuk memberi reward ke para miner yang bloknya sudah 
-            terpilih dalam proses mining.
-         */
-        if (SimClock.getTime() >= 500000) {
-            for (DTNHost h : SimScenario.getInstance().getHosts()) {
-                if (isMiner(h)) {
-                    System.out.println("Wallet " + h + ": " + h.getWallet().getBalance());
-
-                }
-            }
-            System.exit(0);
-        }
     }
 
     /**
@@ -162,13 +146,16 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      * mencatat waktu penambangan. Blok dengan hasil terbaik kemudian dipilih
      * dan disimpan dalam rantai blok lokal (Localchai).
      *
-     * Algoritma bekerja dengan langkah-langkah: 1. Operator Proxy memilih
-     * daftar transaksi terbaik dari kumpulan transaksi yang ada 2. Menugaskan
-     * proses penambangan ke Miner yang belum pernah ditugaskan sebelumnya 3.
-     * Miner melakukan proses penambangan (proof-of-work) dan mencatat waktu
-     * yang dibutuhkan 4. Setelah 7 Miner berpartisipasi, blok dengan waktu
-     * penambangan terbaik akan dipilih 5. Blok terpilih ditambahkan ke rantai=
-     * blok lokal dan daftar transaksi diperbarui
+     * Algoritma bekerja dengan langkah-langkah: 
+     * 1. Operator Proxy memilih daftar transaksi terbaik dari kumpulan 
+     *    transaksi yang ada.
+     * 2. Menugaskan proses penambangan ke Miner yang belum pernah ditugaskan 
+     *    sebelumnya.
+     * 3. Miner melakukan proses penambangan (proof-of-work) dan mencatat waktu
+     *    yang dibutuhkan.
+     * 4. Setelah 7 Miner berpartisipasi, blok dengan waktu mining terbaik 
+     *    akan dipilih.
+     * 5. Blok terpilih ditambahkan ke Localchain dan daftar transaksi diperbarui
      *
      * @param host DTNHost yang bertindak sebagai Operator Proxy untuk mengelola
      * proses penambangan
@@ -177,35 +164,46 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      */
     private void mining_algorithmOne(DTNHost host, DTNHost peer) {
         if (isOperatorProxy(host)) {
+            
+            List<List<Transaction>> trx = host.getTrx();
+            Localchain localChain = host.getLocalchain();
+            String previousHash = localChain.getLatestBlock().getHash();
 
+            // proses mining terus berjalan selama list trx OP masih ada
             if (host.getSelectedBlock() == null && !host.getTrx().isEmpty()) {
-
-                List<List<Transaction>> trx = host.getTrx();
-                Localchain localChain = host.getLocalchain();
-                String previousHash = localChain.getLatestBlock().getHash();
 
                 if (isMiner(peer)) {
 
-                    if (!host.getVisitedMiner().contains(peer)) { // jika baru pertama kali bertemu
-
+                    // datangi setiap miner yang baru pertama kali bertemu
+                    if (!host.getVisitedMiner().contains(peer)) { 
                         host.getVisitedMiner().add(peer);
 
+                        // pilih transaksi terbaik, tiap miner pasti memilih transaksi yang sama
                         int indexBestTRX = getBestTranx(trx);
                         List<Transaction> bestTransactionList = new ArrayList<>(trx.get(indexBestTRX));
+                        
+                        // cek tiap transaksi yang ada di list yang miner pilih
                         for (int i = 0; i < bestTransactionList.size(); i++) {
+                            
+                            // periksa validitas tanda tangan digital tranasaksi
                             if (!bestTransactionList.get(i).verifySignature()) {
-                                System.out.println("Transaksi " + bestTransactionList.get(i).getTransactionHash() + " tidak valid!");
+                                System.out.println("Transaksi " 
+                                        + bestTransactionList.get(i).getTransactionHash() 
+                                        + " tidak valid!");
                                 bestTransactionList.remove(i);
                             }
                         }
-                        Block b = new Block(previousHash, bestTransactionList, System.currentTimeMillis());
+                        
+                        // bungkus transaksi ke sebuah blok
+                        Block b = new Block(previousHash, 
+                                bestTransactionList, 
+                                System.currentTimeMillis());
                         b.setFee(getFee(bestTransactionList));
                         b.setMinedBy(peer);
 
+                        // mining blok (menebak nilai nonce)
                         long begin = System.currentTimeMillis();
-
                         b.mineBlock(localChain.getDifficulty());
-
                         long end = System.currentTimeMillis();
                         long time = end - begin;
 
@@ -215,15 +213,21 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     }
                 }
 
+                /* Saat sebuah transaksi yang sama sudah dibentuk blok
+                *  oleh 7 miner (per area ada 7), maka OperatorProxy bertugas
+                *  mencari minedBlock terbaik untuk dipilih ke selectedBlock
+                */
                 if (host.getVisitedMiner().size() == 7) {
 
+                    // reset catatan kedatangan untuk transaksi-transaksi selanjutnya
                     host.getVisitedMiner().clear();
 
+                    // hapus transaksi terpilih dari list trx OperatorProxy
                     int indexBestTRX = getBestTranx(trx);
                     host.getTrx().remove(indexBestTRX);
 
+                    // pilih blok terbaik, masukkan ke selectedBlock
                     int index = getBestMinedBlock(minedBlock);
-
                     Block selectedBlock = new Block(minedBlock.get(index));
                     host.setSelectedBlock(selectedBlock);
 
@@ -260,35 +264,42 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                 if (isMiner(peer)) {
 
-                    if (!host.getVisitedMiner().contains(peer)) {// jika baru pertama kali bertemu
-
+                    if (!host.getVisitedMiner().contains(peer)) {
                         host.getVisitedMiner().add(peer);
-
+                        
+                        // ambil hash dari blok terpilih
                         String targetHash = selectedBlock.calculateHash();
-
+                        
+                        // buat blok sementara untnuk dibandingkan hashnya
                         Block b = new Block(selectedBlock);
                         String hash = b.calculateHash();
 
+                        // bandingkan, jika sama = valid, tambah nilai "v"
                         if (targetHash.equals(hash)) {
                             host.setV(host.getV() + 1);
                         }
                     }
 
+                    /* Konsepnya menggunakan threshold tertentu dari nilai
+                       "v" untuk menandakan bahwa blok tersebut valid dan
+                       disetujui oleh para miner.
+                    */
                     if (host.getV() == threshold) {
                         if (!(host.getV() > threshold)) {
 
                             //tambahkan selectedBlock ke dalam localchain
                             localChain.addBlock(new Block(selectedBlock));
 
-                            //reset v
+                            //reset v untuk blok selanjutnya nanti
                             host.setV(0);
 
-                            //reset visitedMiner
+                            //reset visitedMiner untuk blok selanjutnya nanti
                             host.getVisitedMiner().clear();
 
-                            // reset selectedBlock
+                            // reset selectedBlock untuk blok selanjutnya nanti
                             host.setSelectedBlock(null);
 
+                            // jika trx OperatorProxy habis, tandanya siap store ke Home
                             if (host.getTrx().isEmpty() && host.isReadyToStore() == false) {
                                 host.setReadyToStore(true);
                             }
@@ -314,15 +325,13 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     * @param peer DTNHost yang bertindak sebagai Home sebagai tujuan penyimpanan
     */
     private void storing_algorithmThree(DTNHost host, DTNHost peer) {
-        if (isOperatorProxy(host)) {
-            if (isHome(peer)) {
-                if (!peer.getVisitedOperatorProxy().contains(host)) {
-                    if (host.isReadyToStore()) {
-                        peer.getVisitedOperatorProxy().add(host);
-                        peer.getStoredLocalchains().add(host.getLocalchain());
-                        System.out.println("Localchain " + host + " stored!, "
-                                + "Storage size: " + peer.getStoredLocalchains().size());
-                    }
+        if (isOperatorProxy(host) && isHome(peer)) {
+            if (!peer.getVisitedOperatorProxy().contains(host)) {  
+                if (host.isReadyToStore()) {
+                    peer.getVisitedOperatorProxy().add(host);
+                    peer.getStoredLocalchains().add(host.getLocalchain());
+                    System.out.println("Localchain " + host + " stored!, "
+                            + "Storage size: " + peer.getStoredLocalchains().size());
                 }
             }
         }
@@ -345,6 +354,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     private void selection_algorithmFour(DTNHost host, DTNHost peer) {
         if (isHome(host)) {
 
+            // cek kalau Localchain udah ditambah semua ke Blockchain, selesai.
             if (isCollector(peer)) {
                 if (peer.isAppendingDone() || host.isAppendingDone()) {
                     return;
@@ -352,6 +362,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                 if (peer.getSelectedLocalchain() == null) {
 
+                    // tandai selesai jika storedLocalchains di Home sudah habis
                     if (host.getStoredLocalchains().size() == SimScenario.getInstance().localChainCount) {
                         if (host.getStoredLocalchains().isEmpty()) {
                             System.out.println("SEMUA TRANSAKSI SUDAH DITAMBAHKAN DI BLOCKCHAIN");
@@ -360,19 +371,22 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                             return;
                         }
 
+                        // hitung hash tiap Localchain yang distore ke Home
                         for (Localchain sL : host.getStoredLocalchains()) {
                             String hash = sL.calculateHash();
                             sL.setHash(hash);
                         }
 
+                        // pemilihan Localchain dengan rantai terpanjang
                         Localchain selected = null;
                         for (Localchain lc : host.getStoredLocalchains()) {
                             if (selected == null || lc.chainSize() > selected.chainSize()) {
                                 selected = lc;
                             }
                         }
+                        
+                        // set ke selectedLocalchain, dan hapus dari storedLocalchains
                         peer.setSelectedLocalchain(selected);
-
                         host.getStoredLocalchains().remove(selected);
 
                         System.out.println("Localchain terbaik berhasil dipilih! "
@@ -388,36 +402,34 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     * melalui node Collector setelah proses seleksi selesai.
     * 
     * Algoritma bekerja dengan langkah-langkah:
-    * 1. Collector memverifikasi integritas rantai lokal terpilih dengan membandingkan hash
-    * 2. Jika valid, rantai lokal disambungkan ke rantai blok utama di node Internet
-    * 3. Memperbarui counter rantai yang tersisa dan menampilkan status akhir
+    * 1. Collector memverifikasi validitas localchainn terpilih dengan membandingkan hash
+    * 2. Jika valid, localchain disambungkan ke blockchain utama di node Internet
+    * 3. Memperbarui counter chain yang tersisa dan menampilkan status akhir
     * 4. Memberikan output informasi real-time tentang progres penyambungan
     *
     * @param host DTNHost yang bertindak sebagai Collector pelaksana penyambungan
     * @param peer DTNHost yang bertindak sebagai Internet penyimpan rantai utama
     */
     private void appending_algorithmFive(DTNHost host, DTNHost peer) {
-        if (isCollector(host)) {
+        if (isCollector(host) && isInternet(peer)) {
+            
+            // kalau udah selesai semua, lewati.
+            if (host.isAppendingDone()) {
+                return;
+            }
 
-            if (isInternet(peer)) {
-                if (host.isAppendingDone()) {
-                    return;
-                }
+            // setelah pemilihan Localchain, cek validitas hash
+            if (host.getSelectedLocalchain() != null) {
+                SimScenario.getInstance().localChainCount--;
+                String hash = host.getSelectedLocalchain().getHash();
+                String calculatedHash = host.getSelectedLocalchain().calculateHash();
 
-                if (host.getSelectedLocalchain() != null) {
-                    SimScenario.getInstance().localChainCount--;
-                    String hash = host.getSelectedLocalchain().getHash();
-                    String calculatedHash = host.getSelectedLocalchain().calculateHash();
+                // jika valid, tambahkan ke Blockchain
+                if (calculatedHash.equals(hash)) {
+                    peer.getMainChain().addBlockFromLocalChain(host.getSelectedLocalchain());
 
-                    if (calculatedHash.equals(hash)) {
-                        peer.getMainChain().addBlockFromLocalChain(host.getSelectedLocalchain());
-
-                        host.setSelectedLocalchain(null);
-                        System.out.println("Transaksi berhasil ditambahkan ke Blockchain!");
-                    }
-                    if (SimScenario.getInstance().localChainCount == 0) {
-                        System.out.println(peer.getMainChain());
-                    }
+                    host.setSelectedLocalchain(null);
+                    System.out.println("Transaksi berhasil ditambahkan ke Blockchain!");
                 }
             }
         }
@@ -437,42 +449,71 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     *    3. Menambahkan balance ke wallet miner
     *    4. Mencatat miner yang sudah menerima reward
     *
-    * @param host DTNHost yang bertindak sebagai penerima/prosesor reward
-    * @param peer DTNHost yang bertindak sebagai sumber/pemberi reward
+    * @param host Operator Proxy yang bertindak sebagai penerima/prosesor reward
+    * @param peer miner yang bertindak sebagai sumber/pemberi reward
     */
-    private void reward_algorithmSix(DTNHost host, DTNHost peer) {
-        /* Informasikan dulu dari home ke para operator proxy */
+    private void reward_algorithmSix(DTNHost host, DTNHost peer) {        
         if (isOperatorProxy(host) && isHome(peer)) {
+            
+            /* Informasikan dulu dari home ke para operator proxy */
             if (peer.isAppendingDone()) {
                 host.setAppendingDone(true);
+            }
+            
+            /* Jika OperatorProxy ternyata sudah selesai membagikan reward,
+               catat ke Home 
+            */
+            if (host.isDoneReward()) {
+                peer.getConfirmedDoneOperatorProxy().add(host);
+            }
+            
+            /* Mekanisme trasaksi selesai jika semua operator proxy 
+               sudah selesai membagikan reward (8 area)
+            */
+            if (peer.getConfirmedDoneOperatorProxy().size() == 8) {
+                System.out.println("MEKANISME TRANSAKSI SELESAI");
+                System.exit(0);
             }
         }
 
         /* Mulai bagikan fee ke miner */
         if (isMiner(host) && isOperatorProxy(peer)) {
+            if (peer.isDoneReward()) {return;}
+            
             if (peer.isAppendingDone() && !peer.getRewardedMiners().contains(host)) {
                 List<Block> list = peer.getLocalchain().getChain();
 
-                for (Block b : list) {
+                /* Proses looping mencari blok-blok yang telah dimining oleh 
+                  miner (host) untuk diberikan reward. */
+                Iterator<Block> iterator = list.iterator();
+                while (iterator.hasNext()) {
+                    Block b = iterator.next();
                     DTNHost miner = b.getMinedBy();
                     double fee = b.getFee();
 
                     if (miner.equals(host)) {
-                        System.out.println("Memberikan reward ke " + miner + ".....");
+                        System.out.println("Memberikan reward ke " 
+                                            + miner + ".....");
                         host.getWallet().addBalance(fee);
+                        iterator.remove();
                     }
                 }
 
                 peer.getRewardedMiners().add(host);
+                
+                if (list.isEmpty()) {
+                    System.out.println(peer +" telah selesai membagikan reward");
+                    peer.setDoneReward(true);
+                }
             }
         }
     }
 
     /**
-     * Finds the index of the transaction list with the highest total amount.
+     * Cari indeks daftar transaksi yang total nominalnya paling gede.
      *
-     * @param trx A list of transaction lists to be evaluated.
-     * @return The index of the transaction list with the highest total amount.
+     * @param trx Daftar transaksi yang mau diitung-itung.
+     * @return Indeks daftar transaksi yang total nominalnya paling gede.
      */
     private int getBestTranx(List<List<Transaction>> trx) {
         int index = -1;
@@ -492,12 +533,11 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     }
 
     /**
-     * Calculates the total transaction fee based on a percentage of the total
-     * transaction amount.
+     * Ngitung total biaya transaksi berdasarkan persentase dari total 
+     * nominal transaksi.
      *
-     * @param t A list of transactions whose total fee is to be calculated.
-     * @return The calculated transaction fee, which is a percentage of the
-     * total transaction amount.
+     * @param t Daftar transaksi yang mau diitung biayanya
+     * @return Biaya transaksi, yaitu 1% dari total nominal
      */
     private double getFee(List<Transaction> t) {
         double total = 0;
@@ -509,10 +549,12 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     }
 
     /**
-     * Finds the index of the block with the shortest mining time.
+     * Nyari indeks block yang waktu miningnya paling cepet.
      *
-     * @param minedBlock A list of mined blocks to be evaluated.
-     * @return The index of the block that was mined in the shortest time.
+     * @param minedBlock Daftar block yang udah di-mining, 
+     *        mau dicek mana yang tercepat
+     * @return Indeks block yang miningnya paling cepat. 
+     *          Kalo daftarnya kosong, return -1
      */
     private int getBestMinedBlock(List<Block> minedBlock) {
         if (minedBlock.isEmpty()) {
@@ -543,6 +585,12 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean shouldSaveReceivedMessage(Message m, DTNHost thisHost) {
+        
+        /*
+          Di sini momen ketika Operator Proxy menangkap property transaction
+          dari message yang dikirim miner, lalu transaction dimasukkan ke
+          dalam list transactionBuffer
+        */
         if (isOperatorProxy(thisHost)) {
             Transaction trx = (Transaction) m.getProperty("transaction");
             if (trx != null) {
@@ -552,12 +600,23 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         return !thisHost.getRouter().hasMessage(m.getId());
     }
 
+    /**
+     * Nambahin transaksi ke buffer milik OperatorProxy untuk diolah nanti
+     * 
+     * @param host Node yang mau dikasih transaksi
+     * @param trx Transaksi yang akan dimasukin ke buffer
+     */
     private void addTransactionToBuffer(DTNHost host, Transaction trx) {
         host.addTransactionToBuffer(trx);
     }
 
     @Override
     public boolean shouldSendMessageToHost(Message m, DTNHost otherHost, DTNHost thisHost) {
+        
+        /* konsepnya gini, yang bisa ngirim pesan cuma miner, dan yang bisa 
+           menerima pesan hanya miner lain (sebagai relay) dan OperatorProxy
+          (sebagai final destination)
+         */
         return isMiner(thisHost) && (isOperatorProxy(otherHost) || isMiner(otherHost));
     }
 
