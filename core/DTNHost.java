@@ -131,6 +131,12 @@ public class DTNHost implements Comparable<DTNHost> {
          * mereka yang melakukan kontribusi mining untuk diberikan fee.
          */
         private Set<DTNHost> rewardedMiner;
+        
+        /**
+         * Catatan OperatorProxy saat sudah selesai memberikan reward. Jika
+         * bernilai true maka tandanya proses sudah selesai
+         */
+        private boolean doneReward;
     /* ---------------------------------------------------------------------- */
 
         
@@ -147,6 +153,12 @@ public class DTNHost implements Comparable<DTNHost> {
          * berkunjung ke Home
          */
         private Set<DTNHost> visitedOperatorProxy;
+        
+        /**
+         * Catatan untuk Home mencatat tiap Operator Proxy yang sudah selesai
+         * memberikan reward pada miner-miner di areanya.
+         */
+        private Set<DTNHost> confirmedDoneOperatorProxy;
     /* ---------------------------------------------------------------------- */
     
         
@@ -211,6 +223,7 @@ public class DTNHost implements Comparable<DTNHost> {
             this.random = new Random();
             this.hasGrouped = false;
             this.rewardedMiner = new HashSet<>();
+            this.doneReward = false;
         }
         
         /* Inisialisasi untuk Home */
@@ -218,6 +231,7 @@ public class DTNHost implements Comparable<DTNHost> {
             this.storedLocalchains = new ArrayList<>();
             this.visitedOperatorProxy = new HashSet<>();
             this.readyToStore = false;
+            this.confirmedDoneOperatorProxy = new HashSet<>();
         }
         
         /* Inisialisasi untuk Miner */
@@ -302,7 +316,17 @@ public class DTNHost implements Comparable<DTNHost> {
      * bahwa appending telah selesai.
      */
     public boolean isAppendingDone() {return appendingDone;}
-    
+
+    /**
+     * Penannda bahwa Operator Proxy sudah selesai membagikan reward kepada
+     * miner yang sudah berkontribusi dalam proses mining di areanya.
+     * @return true jika data list block-block yang dipegang Operator Proxy
+     * sudah habis.
+     */
+    public boolean isDoneReward() {return doneReward;}
+
+    public void setDoneReward(boolean doneReward) {this.doneReward = doneReward;}
+
     public void setReadyToStore(boolean readyToStore) {this.readyToStore = readyToStore;}
     
     public void setAppendingDone(boolean appendingDone) {this.appendingDone = appendingDone;}
@@ -348,6 +372,10 @@ public class DTNHost implements Comparable<DTNHost> {
     public Set<DTNHost> getVisitedMiner() {return visitedMiner;}
 
     public void setVisitedMiner(Set <DTNHost> visitedMiner) {this.visitedMiner = visitedMiner;}
+
+    public Set<DTNHost> getConfirmedDoneOperatorProxy() {return confirmedDoneOperatorProxy;}
+
+    public void setConfirmedDoneOperatorProxy(Set<DTNHost> confirmedDoneOperatorProxy) {this.confirmedDoneOperatorProxy = confirmedDoneOperatorProxy;}
 
     /**
      * Returns a new network interface address and increments the address for

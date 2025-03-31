@@ -10,6 +10,7 @@ import core.Settings;
 import core.SimClock;
 import core.SimScenario;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,8 +20,8 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      * For Report purpose, maybe needed some variable
      */
     protected LinkedList<Double> resourcesList;
-    public static final String TOTAL_CONTACT_INTERVAL = "perTotalContact";
-    public static final int DEFAULT_CONTACT_INTERVAL = 300;
+//    public static final String TOTAL_CONTACT_INTERVAL = "perTotalContact";
+//    public static final int DEFAULT_CONTACT_INTERVAL = 300;
     private static final String THRESHOLD = "threshold";
     private static final int DEFAULT_THRESHOLD = 6;
     private Double lastRecord = Double.MIN_VALUE;
@@ -30,11 +31,11 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     public EpidemicDecisionRouterBlockchain(Settings s) {
         minedBlock = new ArrayList<>();
-        if (s.contains(TOTAL_CONTACT_INTERVAL)) {
-            interval = s.getInt(TOTAL_CONTACT_INTERVAL);
-        } else {
-            interval = DEFAULT_CONTACT_INTERVAL;
-        }
+//        if (s.contains(TOTAL_CONTACT_INTERVAL)) {
+//            interval = s.getInt(TOTAL_CONTACT_INTERVAL);
+//        } else {
+//            interval = DEFAULT_CONTACT_INTERVAL;
+//        }
 
         if (s.contains(THRESHOLD)) {
             threshold = s.getInt(THRESHOLD);
@@ -134,26 +135,16 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
              */
             appending_algorithmFive(host, peer);
 
-            
+            /*
+                Setelah semua localchain sudah diappend ke mainchain, dari
+                Collector memberi kabar ke Home bahwa sudah selesai, lalu
+                Home memberi tahu para operator proxy bahwa sudah selesai dan
+                siap untuk memberi reward ke para miner yang bloknya sudah 
+                terpilih dalam proses mining.
+         */
             reward_algorithmSix(host, peer);
         }
 
-        /*
-            Setelah semua localchain sudah diappend ke mainchain, dari
-            Collector memberi kabar ke Home bahwa sudah selesai, lalu
-            Home memberi tahu para operator proxy bahwa sudah selesai dan
-            siap untuk memberi reward ke para miner yang bloknya sudah 
-            terpilih dalam proses mining.
-         */
-        if (SimClock.getTime() >= 500000) {
-            for (DTNHost h : SimScenario.getInstance().getHosts()) {
-                if (isMiner(h)) {
-                    System.out.println("Wallet " + h + ": " + h.getWallet().getBalance());
-
-                }
-            }
-            System.exit(0);
-        }
     }
 
     /**
@@ -314,9 +305,10 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     * @param peer DTNHost yang bertindak sebagai Home sebagai tujuan penyimpanan
     */
     private void storing_algorithmThree(DTNHost host, DTNHost peer) {
-        if (isOperatorProxy(host)) {
-            if (isHome(peer)) {
+        if (isOperatorProxy(host) && isHome(peer)) {
+            
                 if (!peer.getVisitedOperatorProxy().contains(host)) {
+                    
                     if (host.isReadyToStore()) {
                         peer.getVisitedOperatorProxy().add(host);
                         peer.getStoredLocalchains().add(host.getLocalchain());
@@ -324,7 +316,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                                 + "Storage size: " + peer.getStoredLocalchains().size());
                     }
                 }
-            }
         }
     }
 
@@ -371,6 +362,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                                 selected = lc;
                             }
                         }
+                        
                         peer.setSelectedLocalchain(selected);
 
                         host.getStoredLocalchains().remove(selected);
@@ -388,36 +380,33 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     * melalui node Collector setelah proses seleksi selesai.
     * 
     * Algoritma bekerja dengan langkah-langkah:
-    * 1. Collector memverifikasi integritas rantai lokal terpilih dengan membandingkan hash
-    * 2. Jika valid, rantai lokal disambungkan ke rantai blok utama di node Internet
-    * 3. Memperbarui counter rantai yang tersisa dan menampilkan status akhir
+    * 1. Collector memverifikasi validitas localchainn terpilih dengan membandingkan hash
+    * 2. Jika valid, localchain disambungkan ke blockchain utama di node Internet
+    * 3. Memperbarui counter chain yang tersisa dan menampilkan status akhir
     * 4. Memberikan output informasi real-time tentang progres penyambungan
     *
     * @param host DTNHost yang bertindak sebagai Collector pelaksana penyambungan
     * @param peer DTNHost yang bertindak sebagai Internet penyimpan rantai utama
     */
     private void appending_algorithmFive(DTNHost host, DTNHost peer) {
-        if (isCollector(host)) {
+        if (isCollector(host) && isInternet(peer)) {
+            if (host.isAppendingDone()) {
+                return;
+            }
 
-            if (isInternet(peer)) {
-                if (host.isAppendingDone()) {
-                    return;
-                }
+            if (host.getSelectedLocalchain() != null) {
+                SimScenario.getInstance().localChainCount--;
+                String hash = host.getSelectedLocalchain().getHash();
+                String calculatedHash = host.getSelectedLocalchain().calculateHash();
 
-                if (host.getSelectedLocalchain() != null) {
-                    SimScenario.getInstance().localChainCount--;
-                    String hash = host.getSelectedLocalchain().getHash();
-                    String calculatedHash = host.getSelectedLocalchain().calculateHash();
+            if (calculatedHash.equals(hash)) {
+                peer.getMainChain().addBlockFromLocalChain(host.getSelectedLocalchain());
 
-                    if (calculatedHash.equals(hash)) {
-                        peer.getMainChain().addBlockFromLocalChain(host.getSelectedLocalchain());
-
-                        host.setSelectedLocalchain(null);
-                        System.out.println("Transaksi berhasil ditambahkan ke Blockchain!");
-                    }
-                    if (SimScenario.getInstance().localChainCount == 0) {
-                        System.out.println(peer.getMainChain());
-                    }
+                host.setSelectedLocalchain(null);
+                System.out.println("Transaksi berhasil ditambahkan ke Blockchain!");
+            }
+            if (SimScenario.getInstance().localChainCount == 0) {
+                    System.out.println(peer.getMainChain());
                 }
             }
         }
@@ -437,33 +426,59 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     *    3. Menambahkan balance ke wallet miner
     *    4. Mencatat miner yang sudah menerima reward
     *
-    * @param host DTNHost yang bertindak sebagai penerima/prosesor reward
-    * @param peer DTNHost yang bertindak sebagai sumber/pemberi reward
+    * @param host Operator Proxy yang bertindak sebagai penerima/prosesor reward
+    * @param peer miner yang bertindak sebagai sumber/pemberi reward
     */
-    private void reward_algorithmSix(DTNHost host, DTNHost peer) {
-        /* Informasikan dulu dari home ke para operator proxy */
+    private void reward_algorithmSix(DTNHost host, DTNHost peer) {        
         if (isOperatorProxy(host) && isHome(peer)) {
+            
+            /* Informasikan dulu dari home ke para operator proxy */
             if (peer.isAppendingDone()) {
                 host.setAppendingDone(true);
+            }
+            
+            /* Jika OperatorProxy ternyata sudah selesai membagikan reward,
+               catat ke Home 
+            */
+            if (host.isDoneReward()) {
+                peer.getConfirmedDoneOperatorProxy().add(host);
+            }
+            
+            /* Mekanisme trasaksi selesai jika semua operator proxy 
+               sudah selesai membagikan reward (8 area)
+            */
+            if (peer.getConfirmedDoneOperatorProxy().size() == 8) {
+                System.out.println("MEKANISME TRANSAKSI SELESAI");
+                System.exit(0);
             }
         }
 
         /* Mulai bagikan fee ke miner */
         if (isMiner(host) && isOperatorProxy(peer)) {
+            if (peer.isDoneReward()) {return;}
+            
             if (peer.isAppendingDone() && !peer.getRewardedMiners().contains(host)) {
                 List<Block> list = peer.getLocalchain().getChain();
 
-                for (Block b : list) {
+                Iterator<Block> iterator = list.iterator();
+                while (iterator.hasNext()) {
+                    Block b = iterator.next();
                     DTNHost miner = b.getMinedBy();
                     double fee = b.getFee();
 
                     if (miner.equals(host)) {
                         System.out.println("Memberikan reward ke " + miner + ".....");
                         host.getWallet().addBalance(fee);
+                        iterator.remove();
                     }
                 }
 
                 peer.getRewardedMiners().add(host);
+                
+                if (list.isEmpty()) {
+                    System.out.println(peer +" telah selesai membagikan reward");
+                    peer.setDoneReward(true);
+                }
             }
         }
     }
