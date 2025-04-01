@@ -150,7 +150,7 @@ public class SimScenario implements Serializable {
     /**
      * Counter untuk algoritma appending.
      */
-    public int localChainCount = 8;
+    public int localChainCount = 0;
     /**
      * The world instance
      */
@@ -535,6 +535,7 @@ public class SimScenario implements Serializable {
                 if (isOperatorProxy(host)) {
                     host.setLocalchain(new Localchain(this.difficulty));
                     host.getLocalchain().setName("Localchain " + host.toString());
+                    localChainCount++;
                 }
                 
                 /* buat inisialisasi Blockchain pada internet */
