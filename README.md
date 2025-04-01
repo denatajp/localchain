@@ -126,6 +126,73 @@ Library ini penting untuk proses kriptografi. Download dari [link ini](https://w
 
 ### Reward:
 - Miner menerima reward berdasarkan kontribusi penambangan.
+
+<details>
+  <summary>Alur Program Mendalam</summary>
+  
+# Alur detail
+
+## Pembangkitan Pesan
+- Pada 10.000 ms pertama, program memanggil class `TransactionEventGenerator` sehingga men-_trigger_ class `TransactionCreateEvent` untuk membuat pesan baru dengan tujuan pesan ke Operator Proxy. Lalu juga membuat transaksi `Transaction` dan transaksi tersebut dibungkus ke dalam property pesan sebagai _transaction_. Proses ini hanya terjadi di node Miner saja.
+- Selama pembangkitan pesan, node Miner yang baru saja membuat sebuah pesan juga akan bergerak di areanya sambil mencari relay (miner lain) untuk mengirim pesan agar sampai ke tujuan (Operator Proxy).
+- Begitu Operator Proxy bertemu miner yang membawa pesan yang berisi transaksi itu, maka akan menyimpan pesan tersebut, lalu mengambil _transaction_ di dalamnya dan dimasukkan ke list `transactionBuffer` milik Operator Proxy. Proses ini berlangsung terus-menerus sampai fase pembangkitan pesan selesai (default settings.txt adalah 10.000 ms untuk pembangkitan pesan).
+
+## Grouping Transaction
+- Setelah melewati 10.000 ms, maka sudah tidak ada pembangkitan pesan lagi, dan asumsi Operator Proxy sudah tidak menerima transaksi lagi. Lalu, selama 10.000 ms selanjutnya ini merupakan waktu untuk Operator Proxy mengelompokkan transaksi-transaksi di dalam `transactionBuffer` menjadi beberapa kelompok secara acak.
+- Transaksi-transaksi yang ada di `transactionBuffer` ini akan dipisah-pisah, lalu dikelompokkan menjadi beberapa list transaksi. Kumpulan list transaksi ini akan disimpan ke dalam satu list yaitu `trx` milik Operator Proxy.
+- Proses Grouping ini berjalan selama 10.000 ms sampai waktu simulasi mencapai 20.000. Saat sudah selesai melakukan _grouping_, Operator Proxy menandakan dirinya sudah selesai dengan mengeset `hasGrouped = true` pada dirinya sendiri untuk mengantisipasi terjadi pengulangan grouping selanjutnya.
+
+## Mining
+- Setelah 20.000 ms simulasi, maka dimulai proses _mining_. Proses ini terjadi jika dan hanya jika node Miner bertemu dengan Operator Proxy saja.
+- Saat Operator Proxy menemui sebuah miner, pertama-tama Operator Proxy harus mencatat kedatangan miner tersebut (seperti absensi) menggunakan HashSet bernama `getVisitedMiner` untuk menandai bahwa miner tersebut sudah pernah bertemu. 
+- Selanjutnya miner akan melihat-lihat dahulu pada list `trx` milik Operator Proxy. Karena di dalam list `trx` terdapat list-list yang berisi kumpulan transaksi, maka miner bisa memilih kira-kira mana list yang memiliki _fee_ terbesar (1% dari total amount pada tiap transaksi). Jika sudah memilih, maka miner tersebut akan siap untuk melakukan pembuatan blok.
+- Sebelum itu, miner akan mengecek keaslian data transaksi dengan cara mengecek tanda tangan digital pada transaksi yang dipilih menggunakan fungsi kriptografi pada _class_ `SecureTransaction`. Jika sudah valid, miner membungkus list transaksi yang dipilih ke dalam sebuah `Block` baru.
+- Saat `Block` baru dibuat, miner akan siap untuk mencari nilai _nonce_ pada blok tersebut sesuai dengan target kesulitan pada Blockchain dan Localchain. Operator Proxy akan bertugas untuk mencatat waktu mulai miner melakukan _mining_ dan waktu selesai.
+- Proses _mining_ berlangsung.
+- Setelah selesai, waktu _mining_ dicatat ke dalam blok, dan blok yang telah di-_mining_ akan disimpan di penyimpanan sementara milik Operator Proxy yaitu `minedBlock`. Saat miner ini nanti bertemu Operator Proxy kembali, maka tidak akan melakukan _mining_ lagi karena sudah melakukan absen di `getVisitedMiner`.
+- Operator Proxy lanjut mendatangi miner lain di areanya. Saat bertemu miner lain, prosesnya sama, namun karena list `trx` tidak ada yang berubah, nantinya miner lain pasti juga akan memilih list transaksi yang sama dengan miner pertama. Apakah salah? tidak, karena memang ini konsepnya, yakni Operator Proxy nanti akan membandingkan versi _mining_ antar miner untuk list transaksi yang sama, sehingga versi _mining_ dengan interval waktu mining tercepat akan dipilih.
+- Saat satu list dari `trx` ini sudah di-_mining_ oleh semua miner di area tersebut (`getVisitedMiner == 7`: asumsi ada 7 miner/area), maka di sini Operator Proxy akan memilih blok dengan interval mining terbaik, lalu memasukkannya ke `selectedBlock`. Tidak lupa Operator Proxy juga akan remove list terpilih di `trx` agar tidak di-_mining_ lagi, dan juga mereset `minedBlock` dan `getVisitedMiner` untuk lanjut ke list di `trx` selanjutnya. Namun sebelum lanjut ke list selanjutnya, akan menjalankan proses verifikasi dahulu, karena jika Operator Proxy sedang memegang blok terpilih (`selectedBlock is not null`), maka tidak bisa melakukan proses _mining_ dulu dan harus diverifikasi dulu. 
+
+## Verification
+- Proses verifikasi dilakukan saat Operator Proxy sedang memegang blok terpilih (`selectedBlock is not null`), dan kembali akan mendatangi miner-miner lain dengan skema absensi `getVisitedMiner` seperti pada proses _mining_. 
+- Saat bertemu miner, maka Operator Proxy memberikan blok terpilih untuk dilakukan verifikasi _hash_ pada blok. Apakah _hash_ dari blok tersebut sudah memenuhi kriteria/target kesulitan pada Blockchain atau tidak.
+- Jika memenuhi target, maka Operator Proxy melakukan _increment_ nilai `v`, yaitu jumlah miner yang menyetujui blok terpilih.
+- Proses verifikasi berlanjut ke miner-miner lain, sampai jumlah `v` sudah mencapai `threshold`, maka blok dianggap valid dimasukkan ke Localchain milik Operator Proxy.
+- Setelah itu, Operator Proxy kembali mereset nilai `v`, absensi `getVisitedMiner`, dan mengubah status `selectedBlock` menjadi `null` untuk melakukan proses _mining_ kembali pada list `trx` selanjutnya.
+- Operator Proxy akan melakukan proses _mining_-_verification_ terus-menerus secara berurutan sampai list `trx` di Operator Proxy kosong (`.getTrx().isEmpty()`) dan mengeset status Operator Proxy menjadi siap untuk melakukan _storing_ Localchain (`readyToStore = true`).
+
+## Storing
+- Proses ini dilakukan saat Operator Proxy bertemu dengan Home, dengan syarat bahwa Operator Proxy harus sudah menjalankan tugas di areanya (_mining_-_verification_; `readyToStore = true`).
+- Home akan menggunakan skema absensi `getVisitedOperatorProxy` untuk mencatat kedatangan Operator Proxy. Jadi tiap Operator Proxy hanya bisa menyetor Localchain sekali saja.
+- Setiap Operator Proxy yang datang ke Home akan menyetorkan Localchainnya ke `storedLocalchains` milik Home.
+- Proses storing terus berjalan sampai semua Operator Proxy mengirim ke Home.
+
+## Selection
+- Setelah disetor, kemudian proses dilanjutkan dengan memilih Localchain terbaik. Proses selection ini dilakukan antara node Home dengan node Collector.
+- Saat Collector mengunjungi Home, akan memeriksa `storedLocalchains` di Home untuk memilih Localchain terbaik dengan rantai (blok) terpanjang.
+- Collector juga akan mengkalkulasi hash dari tiap Localchain. Hash yang dimaksud adalah nilai dari penggabungan _hash_ pada blok-blok di dalam localchain tersebut. Jadi sekarang tiap localchain punya hashnya sendiri-sendiri.
+- Selanjutnya Collector memeriksa dalam list `storedLocalchains` menghitung size dari setiap localchain. Localchain dengan size terbesar akan dimasukkan ke variabel sementara `selected`.
+- Collector kemudian mengambil `selected` tadi dan memasukkan ke penyimpanan miliknya yaitu `selectedLocalchain`. Lalu menghapus localchain terpilih dari list `storedLocalchains` milik Home tadi.
+- Proses selection selesai, Collector sudah memegang satu localchain (`selectedLocalchain is not null`) dan siap pergi ke node Internet untuk menambahkan localchain terpilih ke Blockchain, dan jika Collector datang ke Home lagi sebelum berkunjung ke Internet, maka tidak akan melakukan apa-apa karena dia sedang memegang Localchain.
+
+## Appending
+- Proses _appending_ dilakukan oleh node Collector dan node Internet, dengan syarat Collector harus memegang satu localchain terpilih dari Home.
+- Internet akan memeriksa `selectedLocalchain` yang dibawa Collector dengan menghitung _hash_ nya terlebih dahulu lalu akan dibandingkan dengan _hash_ yang sudah ada. Jika valid, maka lanjut proses menambahkan localchain ke Blockchain.
+- Proses penambahan ke Blockchain ini sedikit rumit, karena harus kembali memecah blok-blok di dalam localchain lalu harus mengubah `previousHash` dari blok pertama pada Localchain (yang tadinya bernilai `null`) menjadi _hash_ dari blok terakhir/terbaru pada Blockchain. Perubahan `previousHash` ini akan mempengaruhi _hash_ dari semua blok di Localchain tersebut karena perubahan kecil saja akan mengubah keseluruhan _hash_ dan _hash_ yang baru belum tentu memenuhi target kesulitan pada Blockchain.
+- Oleh karena itu, perlu dilakukan _recalculateHash_ untuk setiap blok pada localchain. Idenya adalah mengecek menggunakan nilai `nonce` saat ini. Jika saat di-_recalculate_ hasilnya memenuhi kriteria, maka tidak perlu _mining_ ulang dan langsung lanjut. Tapi jika belum memenuhi, maka mencari nilai `nonce` dahulu sampai valid.
+- Saat semua hash dari blok sudah valid, maka proses penambahan ke Blockchain sudah berhasil. Collector akan mengeset `selectedLocalchain` menjadi `null` dan siap untuk mengambil localchain lainnya di Home.
+- Proses _selection_-_appending_ ini akan berlangsung terus-menerus secara berurutan sampai jumlah localchain yang ada habis `localChainCount is empty`, dan Collector akan menandai dirinya sendiri sudah selesai (set `appendingDone = true`).
+- Semua transaksi sudah ditambahkan ke Blockchain, selanjutnya adalah memberikan reward ke masing-masing miner yang sudah berkontribusi.
+
+## Reward
+- Fase ini melewati beberapa node. Pertama dari Collector yang `appendingDone = true` akan mengunjungi Home, lalu mengeset `appendingDone = true` juga di Home. Lalu saat OperatorProxy mengunjungi Home yang sudah menandai bahwa _appending_ sudah selesai, maka Operator Proxy juga akan menandai `appendingDone = true` pada dirinya sendiri.
+- Selanjutnya Operator Proxy akan kembali mengunjungi miner-miner di area nya dan memeriksa berdasarkan list `localchain` yang masih disimpannya untuk memberikan reward.
+- Saat `localchain` sudah kosong, maka tandanya Operator Proxy ini sudah selesai melakukan rewarding ke miner di areanya, lalu menandai dirinya sendiri sudah selesai (set `doneReward = true`). Lalu saat Operator Proxy yang sudah selesai melakukan tugasnya mengunjungi Home, maka Home akan mencatat kedatangan Operator Proxy tersebut di HashSet `confirmedDoneOperatorProxy`.
+- Saat `confirmedDoneOperatorProxy` sudah memiliki `size == 8` maka tandanya semua Operator Proxy sudah selesai menajalankan tugasnya, dan mekanisme transaksi Blockchain sudah selesai.
+  
+</details>
+
+
   
 ## Modifikasi
 Kami menggunakan framework ONE Simulator untuk melakukan proses simulasi. Untuk itu, kami memodifikasi beberapa class dan juga membuat class baru untuk melengkapi algoritma. Untuk mempermudah pengembangan, kami akan menjabarkan mana saja class yang kami modifikasi saja (sisanya default dari framework ONE Simulator). Secara struktur, perubahan yang kami buat adalah sebagai berikut:
