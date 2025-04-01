@@ -218,11 +218,3 @@ Penambahan atribut "moveArea".
 Algoritma Routing mekanisme transaksi blockchain DTN.
   
 </details>
-
-
-
-
-<<<<<<< HEAD
-
-=======
->>>>>>> denata
