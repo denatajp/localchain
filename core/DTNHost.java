@@ -269,6 +269,10 @@ public class DTNHost implements Comparable<DTNHost> {
      * @param trx Transaksi yang dibuat oleh miner.
      */
     public void addTransactionToBuffer(Transaction trx) {
+        if (hasGrouped) {
+            return;
+        }
+        
         transactionBuffer.add(trx);
 
         if (SimClock.getTime() > 10000 
