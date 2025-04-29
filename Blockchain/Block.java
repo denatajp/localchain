@@ -1,8 +1,6 @@
 package Blockchain;
 
 import core.DTNHost;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +63,9 @@ public class Block {
      */
     private double fee;
 
+    
+    private int K;
+    
     /**
      * Default constructor, digunakan khusus generic blok
      */
@@ -79,6 +80,7 @@ public class Block {
         this.nonce = 0;
         this.intervalMining = 0;
         this.blockHash = calculateHash();
+        this.K = 0;
     }
 
     /**
@@ -95,6 +97,7 @@ public class Block {
         this.intervalMining = other.intervalMining;
         this.fee = other.fee;
         this.minedBy = other.minedBy;
+        this.K = other.K;
     }
     
     /**
@@ -116,10 +119,14 @@ public class Block {
      * Jika ya simpan dan pakai nonce sekarang.
      * Jika tidak, cari nonce lagi sampai hash memenuhi target
      * @param difficulty target kesulitan pada localchain/blockchain
+     * @return beri info blok layak direcalculate nggak
      */
-    public void recalculateHash(int difficulty) {
-        String newHash = calculateHash();
-
+    public boolean recalculateHash(int difficulty) {
+        if (this.K == 0)
+            return false;
+        
+        calculateHash();
+        /*
         // Cek apakah hash yang dihasilkan memenuhi kriteria difficulty
         if (isHashValid(newHash, difficulty)) {
             this.blockHash = newHash;
@@ -128,7 +135,8 @@ public class Block {
             // Jika tidak valid, lakukan mining ulang
             this.nonce = 0; // Reset nonce
             mineBlock(difficulty); // Lakukan mining ulang
-        }
+        */
+        return true;
     }
 
     /**
@@ -168,6 +176,10 @@ public class Block {
         return sb.toString();
     }
 
+    public void setK(int k) {this.K = k;}
+    
+    public int getK() {return K;}
+    
     public void setBlockHash(String blockHash) {this.blockHash = blockHash;}
 
     public long getIntervalMining() {return intervalMining;}

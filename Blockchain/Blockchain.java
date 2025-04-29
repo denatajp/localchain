@@ -36,6 +36,10 @@ public class Blockchain {
         chain.add(newBlock);
     }
 
+    public int chainSize() {
+        return chain.size();
+    }
+    
     /**
      * Menambahkan block dari local chain ke blockchain utama
      * @param localChain - Chain lokal yang mau diambil block-nya
@@ -46,7 +50,11 @@ public class Blockchain {
         for (Block b : blockFromLocalchain) {
             String previousHash = getLatestBlock().getHash();
             b.setPreviousHash(previousHash);
-            b.recalculateHash(difficulty);
+            // b.recalculateHash(difficulty);
+            if (!b.recalculateHash(difficulty)) {
+                System.out.println("Block " + b.getHash() + " bukan dari Localchain!");
+                continue;
+            }
             addBlock(b);
         }
     }
