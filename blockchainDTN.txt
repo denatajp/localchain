@@ -1,9 +1,9 @@
 # Scenario settings
 Scenario.name = Mining
 Scenario.endTime = 1000000
-Scenario.transaksiAwal = 3
 Scenario.difficulty = 2
 Scenario.nrofHostGroups = 19
+Scenario.minersInGroup = 7
 
 # Transmitt range tiap node
 btInterface.type = SimpleBroadcastInterface

@@ -35,6 +35,10 @@ public class SimScenario implements Serializable {
     /**
      * namespace of scenario settings ({@value})
      */
+    public static final String MINERS_IN_GROUP = "minersInGroup";
+    /**
+     * namespace of scenario settings ({@value})
+     */
     public static final String SCENARIO_NS = "Scenario";
     /**
      * number of host groups -setting id ({@value})
@@ -152,6 +156,10 @@ public class SimScenario implements Serializable {
      */
     public int localChainCount = 0;
     /**
+     * Jumlah miner tiap grup
+     */
+    private int minersInGroup;
+    /**
      * The world instance
      */
     private World world;
@@ -243,7 +251,9 @@ public class SimScenario implements Serializable {
         this.simulateConnections = s.getBoolean(SIM_CON_S);
 
         this.difficulty = s.getInt(DIFFICULTY);
-
+        this.minersInGroup = s.getInt(MINERS_IN_GROUP);
+        
+        ensurePositiveValue(minersInGroup, MINERS_IN_GROUP);
         ensurePositiveValue(nrofGroups, NROF_GROUPS_S);
         ensurePositiveValue(endTime, END_TIME_S);
         ensurePositiveValue(updateInterval, UP_INT_S);
@@ -332,6 +342,15 @@ public class SimScenario implements Serializable {
         return worldSizeY;
     }
 
+    public int getMinersInGroup() {
+        return minersInGroup;
+    }
+    
+    /**
+     * Returns difficulty of Blockchain in network
+     *
+     * @return difficulty blockchain
+     */
     public int getDifficulty() {
         return difficulty;
     }

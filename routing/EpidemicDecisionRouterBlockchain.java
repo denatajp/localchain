@@ -217,7 +217,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 *  oleh 7 miner (per area ada 7), maka OperatorProxy bertugas
                 *  mencari minedBlock terbaik untuk dipilih ke selectedBlock
                 */
-                if (host.getVisitedMiner().size() == 7) {
+                if (host.getVisitedMiner().size() == SimScenario.getInstance().getMinersInGroup()) {
 
                     // reset catatan kedatangan untuk transaksi-transaksi selanjutnya
                     host.getVisitedMiner().clear();
@@ -287,6 +287,8 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     if (host.getV() == threshold) {
                         if (!(host.getV() > threshold)) {
 
+                            selectedBlock.setK(1);
+                            
                             //tambahkan selectedBlock ke dalam localchain
                             localChain.addBlock(new Block(selectedBlock));
 
@@ -302,6 +304,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                             // jika trx OperatorProxy habis, tandanya siap store ke Home
                             if (host.getTrx().isEmpty() && host.isReadyToStore() == false) {
                                 host.setReadyToStore(true);
+                                System.out.println("Jumlah trasaksi dipegang " + host + ": " + localChain.chainSize());
                             }
                         }
                     }
@@ -430,6 +433,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                     host.setSelectedLocalchain(null);
                     System.out.println("Transaksi berhasil ditambahkan ke Blockchain!");
+                    System.out.println("Blockchain size : " + peer.getMainChain().chainSize());
                 }
             }
         }
