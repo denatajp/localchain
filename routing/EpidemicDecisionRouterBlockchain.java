@@ -47,11 +47,15 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public void connectionUp(DTNHost thisHost, DTNHost peer) {
+        if (isOperatorProxy(thisHost)) {
+            if (SimClock.getTime() > 15000 && SimClock.getTime() < 20000) {
+                thisHost.groupTransactions();
+            }
+        }
     }
 
     @Override
     public void connectionDown(DTNHost thisHost, DTNHost peer) {
-
     }
 
     @Override
@@ -304,7 +308,6 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                             // jika trx OperatorProxy habis, tandanya siap store ke Home
                             if (host.getTrx().isEmpty() && host.isReadyToStore() == false) {
                                 host.setReadyToStore(true);
-                                System.out.println("Jumlah trasaksi dipegang " + host + ": " + localChain.chainSize());
                             }
                         }
                     }
@@ -333,7 +336,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 if (host.isReadyToStore()) {
                     peer.getVisitedOperatorProxy().add(host);
                     peer.getStoredLocalchains().add(host.getLocalchain());
-                    System.out.println("Localchain " + host + " stored!, "
+                    System.out.println("Localchain " + host + " (berisi " + host.getLocalchain().chainSize() + " blok) stored!, "
                             + "Storage size: " + peer.getStoredLocalchains().size());
                 }
             }
@@ -369,6 +372,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     if (host.getStoredLocalchains().size() == SimScenario.getInstance().localChainCount) {
                         if (host.getStoredLocalchains().isEmpty()) {
                             System.out.println("SEMUA TRANSAKSI SUDAH DITAMBAHKAN DI BLOCKCHAIN");
+                            System.out.println("Waktu proses : " + SimClock.getTime() + " s");
                             host.setAppendingDone(true);
                             peer.setAppendingDone(true);
                             return;
@@ -486,7 +490,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
             
             if (peer.isAppendingDone() && !peer.getRewardedMiners().contains(host)) {
                 List<Block> list = peer.getLocalchain().getChain();
-
+                
                 /* Proses looping mencari blok-blok yang telah dimining oleh 
                   miner (host) untuk diberikan reward. */
                 Iterator<Block> iterator = list.iterator();
@@ -496,18 +500,19 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     double fee = b.getFee();
 
                     if (miner.equals(host)) {
-                        System.out.println("Memberikan reward ke " 
+                        System.out.println(peer + "Memberikan reward ke " 
                                             + miner + ".....");
                         host.getWallet().addBalance(fee);
                         iterator.remove();
+                        peer.getRewardedMiners().add(host);
                     }
                 }
-
-                peer.getRewardedMiners().add(host);
                 
                 if (list.isEmpty()) {
                     System.out.println(peer +" telah selesai membagikan reward");
                     peer.setDoneReward(true);
+                    System.out.println("Jumlah miner " + peer + ": " + peer.getRewardedMiners().size());
+                    System.out.println("Kontributor : " + peer.getRewardedMiners());
                 }
             }
         }
@@ -595,10 +600,12 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
           dari message yang dikirim miner, lalu transaction dimasukkan ke
           dalam list transactionBuffer
         */
-        if (isOperatorProxy(thisHost)) {
-            Transaction trx = (Transaction) m.getProperty("transaction");
-            if (trx != null) {
-                addTransactionToBuffer(thisHost, trx);
+        if (isOperatorProxy(thisHost) && SimClock.getTime() < 15000) {
+            if (!thisHost.getRouter().hasMessage(m.getId())) {
+                Transaction trx = (Transaction) m.getProperty("transaction");
+                if (trx != null) {
+                    addTransactionToBuffer(thisHost, trx);
+                }
             }
         }
         return !thisHost.getRouter().hasMessage(m.getId());
@@ -616,6 +623,9 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
     @Override
     public boolean shouldSendMessageToHost(Message m, DTNHost otherHost, DTNHost thisHost) {
+        
+        if (SimClock.getTime() > 10000)
+            return false;
         
         /* konsepnya gini, yang bisa ngirim pesan cuma miner, dan yang bisa 
            menerima pesan hanya miner lain (sebagai relay) dan OperatorProxy

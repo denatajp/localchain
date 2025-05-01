@@ -274,11 +274,6 @@ public class DTNHost implements Comparable<DTNHost> {
         }
         
         transactionBuffer.add(trx);
-
-        if (SimClock.getTime() > 10000 
-                && SimClock.getTime() < 20000) {
-            groupTransactions(); // kelompokkan transaksi
-        }
     }
     
     /**
@@ -286,6 +281,7 @@ public class DTNHost implements Comparable<DTNHost> {
      */
     public void groupTransactions() {
         if (!hasGrouped) {
+            int jumlah = transactionBuffer.size();
             while (!transactionBuffer.isEmpty()) {
                 // Tentukan ukuran paket secara acak
                 int packetSize = random.nextInt(MAX_PACKET_SIZE - MIN_PACKET_SIZE + 1) + MIN_PACKET_SIZE;
@@ -302,6 +298,7 @@ public class DTNHost implements Comparable<DTNHost> {
                 trx.add(packet);
             }
 
+            System.out.println("Sebanyak "+jumlah+" transaksi tersimpan di buffer!");
             System.out.println("Semua transaksi telah dikelompokkan di " + name);
             this.hasGrouped = true;
         }

@@ -126,28 +126,7 @@ public class Block {
             return false;
         
         calculateHash();
-        /*
-        // Cek apakah hash yang dihasilkan memenuhi kriteria difficulty
-        if (isHashValid(newHash, difficulty)) {
-            this.blockHash = newHash;
-            
-        } else {
-            // Jika tidak valid, lakukan mining ulang
-            this.nonce = 0; // Reset nonce
-            mineBlock(difficulty); // Lakukan mining ulang
-        */
         return true;
-    }
-
-    /**
-    * Ngecek apakah hash block valid sesuai difficulty
-    * @param hash Hash yang mau dicek
-    * @param difficulty Target jumlah angka 0
-    * @return true kalo hash memenuhi syarat
-    */
-    private boolean isHashValid(String hash, int difficulty) {
-        String target = repeatZero(difficulty); // Buat target dengan jumlah 0 di awal
-        return hash.substring(0, difficulty).equals(target);
     }
 
     /**
