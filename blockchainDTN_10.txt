@@ -1,9 +1,9 @@
 # Scenario settings
 Scenario.name = Mining
 Scenario.endTime = 10000000
-Scenario.difficulty = 1
+Scenario.difficulty = 3
 Scenario.nrofHostGroups = 19
-Scenario.minersInGroup = 9
+Scenario.minersInGroup = 10
 
 # Transmitt range tiap node
 btInterface.type = SimpleBroadcastInterface
@@ -32,14 +32,14 @@ Group1.btInterface.transmitRange = 30
 Group2.groupID = minerSatu
 Group2.movementModel = RandomArea
 Group2.moveArea = 1
-Group2.nrofHosts = 9
+Group2.nrofHosts = 10
 Group2.speed = 0.5, 1.
 
 # Miner Area 2
 Group3.groupID = minerDua
 Group3.movementModel = RandomArea
 Group3.moveArea = 2
-Group3.nrofHosts = 9
+Group3.nrofHosts = 10
 Group3.speed = 0.5, 1.
 Group3.nrofInterfaces = 1
 Group3.interface1 = btInterface
@@ -49,7 +49,7 @@ Group4.nrofInterfaces = 1
 Group4.groupID = minerTiga
 Group4.movementModel = RandomArea
 Group4.moveArea = 3
-Group4.nrofHosts = 9
+Group4.nrofHosts = 10
 Group4.speed = 0.5, 1.
 Group4.interface1 = btInterface
 
@@ -57,35 +57,35 @@ Group4.interface1 = btInterface
 Group5.groupID = minerEmpat
 Group5.movementModel = RandomArea
 Group5.moveArea = 4
-Group5.nrofHosts = 9
+Group5.nrofHosts = 10
 Group5.speed = 0.5, 1.
 
 # Miner Area 5
 Group6.groupID = minerLima
 Group6.movementModel = RandomArea
 Group6.moveArea = 5
-Group6.nrofHosts = 9
+Group6.nrofHosts = 10
 Group6.speed = 0.5, 1.
 
 # Miner Area 6
 Group7.groupID = minerEnam
 Group7.movementModel = RandomArea
 Group7.moveArea = 6
-Group7.nrofHosts = 9
+Group7.nrofHosts = 10
 Group7.speed = 0.5, 1.
 
 # Miner Area 7
 Group8.groupID = minerTujuh
 Group8.movementModel = RandomArea
 Group8.moveArea = 7
-Group8.nrofHosts = 9
+Group8.nrofHosts = 10
 Group8.speed = 0.5, 1.
 
 # Miner Area 8
 Group9.groupID = minerLapan
 Group9.movementModel = RandomArea
 Group9.moveArea = 8
-Group9.nrofHosts = 9
+Group9.nrofHosts = 10
 Group9.speed = 0.5, 1.
 
 # Operator Proxy Area 1
@@ -181,7 +181,7 @@ Group19.nodeLocation = 1150,500
 # Event pembangkitan transaksi
 Events.nrof = 1
 Events1.class = TransactionEventGenerator
-Events1.interval = 15,25
+Events1.interval = 30,31
 Events1.size = 500k,1M
 Events1.hosts = 1,71
 Events1.prefix = M

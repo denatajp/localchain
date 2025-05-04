@@ -236,7 +236,7 @@ public class TransactionEventGenerator implements EventQueue {
     protected int drawToAddressTrx(int from) {
             int to;
             do {
-                to = 1+rng.nextInt(56);
+                to = 1+rng.nextInt(40);
             } while (to==from);
             
         return to;
