@@ -137,6 +137,10 @@ public class DTNHost implements Comparable<DTNHost> {
          * bernilai true maka tandanya proses sudah selesai
          */
         private boolean doneReward;
+        
+        private int storageCapacity;
+        
+        private int storage;
     /* ---------------------------------------------------------------------- */
 
         
@@ -224,6 +228,8 @@ public class DTNHost implements Comparable<DTNHost> {
             this.hasGrouped = false;
             this.rewardedMiner = new HashSet<>();
             this.doneReward = false;
+            this.storageCapacity = 0;
+            this.storage = 0;
         }
         
         /* Inisialisasi untuk Home */
@@ -261,6 +267,10 @@ public class DTNHost implements Comparable<DTNHost> {
         }
     }
 
+    public int getStorage() {
+        return storage;
+    }
+
 
     /**
      * Menambahkan transaksi yang telah dibangkitkan miner ke buffer milik
@@ -272,7 +282,7 @@ public class DTNHost implements Comparable<DTNHost> {
         if (hasGrouped) {
             return;
         }
-        
+        storage++;
         transactionBuffer.add(trx);
     }
     
@@ -300,10 +310,24 @@ public class DTNHost implements Comparable<DTNHost> {
 
             System.out.println("Sebanyak "+jumlah+" transaksi tersimpan di buffer!");
             System.out.println("Semua transaksi telah dikelompokkan di " + name);
+            System.out.println("Storage : "+ storage);
             this.hasGrouped = true;
         }
     }
-    
+
+    public int getStorageCapacity() {
+        return storageCapacity;
+    }
+
+    public void setStorageCapacity(int storageCapacity) {
+        this.storageCapacity = storageCapacity;
+    }
+    public void increaseUsage(int count){
+        storage += count;
+    }
+    public void decreaseUsage(int count){
+        storage -=count;
+    }
     /**
      * Penanda bahwa Operator Proxy siap melakukan storing Localchain ke Home.
      * @return true jika list trx Operator Proxy empty.

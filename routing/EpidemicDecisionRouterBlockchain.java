@@ -22,18 +22,24 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
     protected LinkedList<Double> resourcesList;
     private static final String THRESHOLD = "threshold";
     private static final int DEFAULT_THRESHOLD = 6;
+    private static final String MAX_TRX = "maxTrx";
     private Double lastRecord = Double.MIN_VALUE;
     private int interval;
     private List<Block> minedBlock;
     private int threshold;
+    private int counter;
+    private int maxTrx;
 
     public EpidemicDecisionRouterBlockchain(Settings s) {
         minedBlock = new ArrayList<>();
-
+        counter = 0;
         if (s.contains(THRESHOLD)) {
             threshold = s.getInt(THRESHOLD);
         } else {
             threshold = DEFAULT_THRESHOLD;
+        }
+        if (s.contains(MAX_TRX)) {
+            maxTrx = s.getInt(MAX_TRX);
         }
     }
 
@@ -43,6 +49,8 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         interval = proto.interval;
         lastRecord = proto.lastRecord;
         this.threshold = proto.threshold;
+        this.counter = proto.counter;
+        this.maxTrx = proto.maxTrx;
     }
 
     @Override
@@ -182,7 +190,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                         // pilih transaksi terbaik, tiap miner pasti memilih transaksi yang sama
                         int indexBestTRX = getBestTranx(trx);
                         List<Transaction> bestTransactionList = new ArrayList<>(trx.get(indexBestTRX));
-
+                        
                         // cek tiap transaksi yang ada di list yang miner pilih
                         for (int i = 0; i < bestTransactionList.size(); i++) {
 
@@ -211,6 +219,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                         b.setIntervalMining(time);
 
                         minedBlock.add(b);
+                        host.increaseUsage(b.getTrxSize());
                     }
                 }
 
@@ -225,13 +234,18 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                     // hapus transaksi terpilih dari list trx OperatorProxy
                     int indexBestTRX = getBestTranx(trx);
+                    host.decreaseUsage(host.getTrx().get(indexBestTRX).size());
                     host.getTrx().remove(indexBestTRX);
+                   
 
                     // pilih blok terbaik, masukkan ke selectedBlock
                     int index = getBestMinedBlock(minedBlock);
                     Block selectedBlock = new Block(minedBlock.get(index));
                     host.setSelectedBlock(selectedBlock);
-
+                    host.increaseUsage(selectedBlock.getTrxSize());
+                    for (Block block : minedBlock) {
+                        host.decreaseUsage(block.getTrxSize());
+                    }
                     minedBlock.clear();
                 }
             }
@@ -294,7 +308,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
 
                             //tambahkan selectedBlock ke dalam localchain
                             localChain.addBlock(new Block(selectedBlock));
-
+                            host.increaseUsage(selectedBlock.getTrxSize());
                             //reset v untuk blok selanjutnya nanti
                             host.setV(0);
 
@@ -302,6 +316,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                             host.getVisitedMiner().clear();
 
                             // reset selectedBlock untuk blok selanjutnya nanti
+                            host.decreaseUsage(selectedBlock.getTrxSize());
                             host.setSelectedBlock(null);
 
                             // jika trx OperatorProxy habis, tandanya siap store ke Home
@@ -608,8 +623,9 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         if (isOperatorProxy(thisHost) && SimClock.getTime() < 15000) {
             if (!thisHost.getRouter().hasMessage(m.getId())) {
                 Transaction trx = (Transaction) m.getProperty("transaction");
-                if (trx != null) {
+                if (trx != null && counter < maxTrx) {
                     addTransactionToBuffer(thisHost, trx);
+                    counter++;
                 }
             }
         }
@@ -623,7 +639,9 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      * @param trx Transaksi yang akan dimasukin ke buffer
      */
     private void addTransactionToBuffer(DTNHost host, Transaction trx) {
+        
         host.addTransactionToBuffer(trx);
+        
     }
 
     @Override
@@ -688,10 +706,11 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
         return host.toString().startsWith("col");
     }
 
-    private boolean isSameArea(DTNHost m1, DTNHost m2){
+    private boolean isSameArea(DTNHost m1, DTNHost m2) {
         return m1.toString().substring(1, 9).equals(m2.toString().substring(1, 9));
     }
-    private boolean isSameAreaOpe(DTNHost ope, DTNHost m){
+
+    private boolean isSameAreaOpe(DTNHost ope, DTNHost m) {
         return ope.toString().substring(3).equals(m.toString().substring(5));
     }
 }

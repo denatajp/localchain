@@ -39,6 +39,9 @@ public class SimScenario implements Serializable {
     /**
      * namespace of scenario settings ({@value})
      */
+    
+    public static final String STORAGE_CAPACITY = "storageCapacity";
+    
     public static final String SCENARIO_NS = "Scenario";
     /**
      * number of host groups -setting id ({@value})
@@ -178,6 +181,9 @@ public class SimScenario implements Serializable {
     /**
      * Width of the world
      */
+    
+    private int storageCapacity;
+    
     private int worldSizeX;
     /**
      * Height of the world
@@ -252,7 +258,9 @@ public class SimScenario implements Serializable {
 
         this.difficulty = s.getInt(DIFFICULTY);
         this.minersInGroup = s.getInt(MINERS_IN_GROUP);
+        this.storageCapacity = s.getInt(STORAGE_CAPACITY);
         
+        ensurePositiveValue(storageCapacity, STORAGE_CAPACITY);
         ensurePositiveValue(minersInGroup, MINERS_IN_GROUP);
         ensurePositiveValue(nrofGroups, NROF_GROUPS_S);
         ensurePositiveValue(endTime, END_TIME_S);
@@ -313,6 +321,14 @@ public class SimScenario implements Serializable {
      */
     public String getName() {
         return this.name;
+    }
+
+    public int getStorageCapacity() {
+        return storageCapacity;
+    }
+
+    public void setStorageCapacity(int storageCapacity) {
+        this.storageCapacity = storageCapacity;
     }
 
     /**
@@ -555,6 +571,7 @@ public class SimScenario implements Serializable {
                     host.setLocalchain(new Localchain(this.difficulty));
                     host.getLocalchain().setName("Localchain " + host.toString());
                     localChainCount++;
+                    host.setStorageCapacity(storageCapacity);
                 }
                 
                 /* buat inisialisasi Blockchain pada internet */

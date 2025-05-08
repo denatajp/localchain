@@ -179,6 +179,7 @@ public class Block {
 
     public void setFee(double fee) {this.fee = fee;}
 
+    public int getTrxSize(){return transactions.size();}
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
