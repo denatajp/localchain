@@ -1,7 +1,7 @@
 # Scenario settings
 Scenario.name = Mining
-Scenario.endTime = 1000000
-Scenario.difficulty = 2
+Scenario.endTime = 250000
+Scenario.difficulty = 1
 Scenario.nrofHostGroups = 19
 Scenario.minersInGroup = 7
 Scenario.storageCapacity = 500
@@ -184,7 +184,7 @@ Group19.nodeLocation = 1150,500
 # Event pembangkitan transaksi
 Events.nrof = 2
 Events1.class = TransactionEventGenerator
-Events1.interval = 35,36
+Events1.interval = 5,6
 Events1.size = 500k,1M
 Events1.hosts = 1,55
 Events1.prefix = M

@@ -26,6 +26,10 @@ import routing.RoutingInfo;
  */
 public class DTNHost implements Comparable<DTNHost> {
 
+    public String getName() {
+        return name;
+    }
+
     private static int nextAddress = 0;
     private int address;
 

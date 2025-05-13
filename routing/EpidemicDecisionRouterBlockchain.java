@@ -354,6 +354,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                     peer.getStoredLocalchains().add(host.getLocalchain());
                     System.out.println("Localchain " + host + " (berisi " + host.getLocalchain().chainSize() + " blok) stored!, "
                             + "Storage size: " + peer.getStoredLocalchains().size());
+                    System.out.println("Difficulty : " +SimScenario.getInstance().getDifficulty());
                 }
             }
         }
@@ -497,8 +498,8 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                sudah selesai membagikan reward (8 area)
              */
             if (peer.getConfirmedDoneOperatorProxy().size() == 8) {
-                System.out.println("MEKANISME TRANSAKSI SELESAI");
-                System.exit(0);
+                //System.out.println("MEKANISME TRANSAKSI SELESAI");
+                //System.exit(0);
             }
         }
 
