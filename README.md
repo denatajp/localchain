@@ -242,6 +242,7 @@ src/
 |
 ├── report/
 |    └── StorageCapacityReport.java
+| 
 └── blockchainDTN.txt
 ```
 
