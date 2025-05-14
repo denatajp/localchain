@@ -89,7 +89,7 @@ Kami mengembangkan project ini menggunakan Netbeans sebagai IDE kami. Untuk inst
 
 2. Clone Repository di direktori lewat Git Bash:
    ```bash
-   git clone https://github.com/2denata/localchain.git
+   git clone https://github.com/denatajp/localchain.git
    ```
 
 3. Pindahkan semua file dari folder `localchain` ke luar folder. Pastikan semua file dan folder ada di direktori `.../src/` sehingga file ada di direktori seperti di gambar ![image](https://github.com/user-attachments/assets/7388b91d-0bf0-4cac-90ad-f77932b2e48f)
