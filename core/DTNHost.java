@@ -137,6 +137,17 @@ public class DTNHost implements Comparable<DTNHost> {
          * bernilai true maka tandanya proses sudah selesai
          */
         private boolean doneReward;
+        
+        /**
+         * Jumlah kapasitas yang dimiliki Operator Proxy untuk menyimpan
+         * transaksi
+         */
+        private int storageCapacity;
+        
+        /**
+         * Penyimpanan transaksi selama proses transaksi
+         */
+        private int storage;
     /* ---------------------------------------------------------------------- */
 
         
@@ -224,6 +235,8 @@ public class DTNHost implements Comparable<DTNHost> {
             this.hasGrouped = false;
             this.rewardedMiner = new HashSet<>();
             this.doneReward = false;
+            this.storageCapacity = 0;
+            this.storage = 0;
         }
         
         /* Inisialisasi untuk Home */
@@ -261,6 +274,10 @@ public class DTNHost implements Comparable<DTNHost> {
         }
     }
 
+    public int getStorage() {
+        return storage;
+    }
+
 
     /**
      * Menambahkan transaksi yang telah dibangkitkan miner ke buffer milik
@@ -272,25 +289,30 @@ public class DTNHost implements Comparable<DTNHost> {
         if (hasGrouped) {
             return;
         }
-        
+        storage++;
         transactionBuffer.add(trx);
-
-        if (SimClock.getTime() > 10000 
-                && SimClock.getTime() < 20000) {
-            groupTransactions(); // kelompokkan transaksi
-        }
     }
     
     /**
-     * Mengelompokkan transaksi 
+     * Method untuk membuat group dari list transaksi yang dipegang OP. 
+     * Pada saat 15000 detik pertama waktu simulasi, Operator Proxy akan sudah
+     * memiliki list transaksi pada transactionBuffer, lalu pada selang waktu
+     * ini, OP akan membentuk beberapa grup yang akan diisi tiap transaksi pada
+     * transactionBuffer, tujuannya untuk memudahkan miner memilih transaksi
+     * yang akan dimining nanti (karena pada real world, Block memiliki lebih 
+     * dari 1 transaksi di dalamnya)
      */
     public void groupTransactions() {
         if (!hasGrouped) {
+            int jumlah = transactionBuffer.size();
             while (!transactionBuffer.isEmpty()) {
-                // Tentukan ukuran paket secara acak
-                int packetSize = random.nextInt(MAX_PACKET_SIZE - MIN_PACKET_SIZE + 1) + MIN_PACKET_SIZE;
                 
-                packetSize = Math.min(packetSize, transactionBuffer.size()); // Pastikan tidak melebihi jumlah transaksi yang ada
+                // Tentukan ukuran paket secara acak
+                int packetSize = random.nextInt(MAX_PACKET_SIZE - 
+                        MIN_PACKET_SIZE + 1) + MIN_PACKET_SIZE;
+                
+                packetSize = Math.min(packetSize, 
+                        transactionBuffer.size()); // Pastikan tidak melebihi jumlah transaksi yang ada
 
                 // Buat paket transaksi
                 List<Transaction> packet = new ArrayList<>();
@@ -302,9 +324,29 @@ public class DTNHost implements Comparable<DTNHost> {
                 trx.add(packet);
             }
 
+            System.out.println("Sebanyak "+jumlah+" transaksi tersimpan di buffer!");
             System.out.println("Semua transaksi telah dikelompokkan di " + name);
+            System.out.println("Storage : "+ storage);
             this.hasGrouped = true;
         }
+    }
+
+    /**
+     * Hanya digunakan untuk menghitung Storage Complexity pada Operator Proxy.
+     * Setiap dia menerima sejumlah transaksi, update storage.
+     * @param count Jumlah transaksi yang didapat
+     */
+    public void increaseUsage(int count){
+        storage += count;
+    }
+    
+    /**
+     * Hanya digunakan untuk menghitung Storage Complexity pada Operator Proxy.
+     * Setiap dia membuang transaksi yang dipegang, update storage.
+     * @param count 
+     */
+    public void decreaseUsage(int count){
+        storage -=count;
     }
     
     /**
@@ -329,6 +371,12 @@ public class DTNHost implements Comparable<DTNHost> {
      */
     public boolean isDoneReward() {return doneReward;}
 
+    public String getName() {return name;}
+    
+    public int getStorageCapacity() {return storageCapacity;}
+
+    public void setStorageCapacity(int storageCapacity) {this.storageCapacity = storageCapacity;}
+    
     public void setDoneReward(boolean doneReward) {this.doneReward = doneReward;}
 
     public void setReadyToStore(boolean readyToStore) {this.readyToStore = readyToStore;}

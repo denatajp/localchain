@@ -120,7 +120,7 @@ public class NodeGraphic extends PlayFieldGraphic {
                     // fallback ke drawRect jika gambar gagal load
                     g2.drawRect(scale(loc.getX()-1), scale(loc.getY()-1), scale(2), scale(2));
                 }
-//		g2.drawRect(scale(loc.getX()-1),scale(loc.getY()-1),scale(2),scale(2));
+		// g2.drawRect(scale(loc.getX()-1),scale(loc.getY()-1),scale(2),scale(2));
 
 		if (drawNodeName) {
 			g2.setColor(hostNameColor);

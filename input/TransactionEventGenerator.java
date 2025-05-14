@@ -203,24 +203,25 @@ public class TransactionEventGenerator implements EventQueue {
      * @return ID penerima (Operator Proxy) berdasarkan areanya
      */
     protected int drawToAddress(int from) {
+        int minersInGroup = SimScenario.getInstance().getMinersInGroup();
         int to;
 
-        if (from >= 1 && from <= 7) {   // area 1
-            to = 57;
-        } else if (from <= 14) {        // area 2
-            to = 58;
-        } else if (from <= 21) {        // area 3
-            to = 59;
-        } else if (from <= 28) {        // area 4      
-            to = 60;
-        } else if (from <= 35) {        // area 5
-            to = 61;
-        } else if (from <= 42) {        // area 6
-            to = 62;
-        } else if (from <= 49) {        // area 7
-            to = 63;
+        if (from >= 1 && from <= 1 * minersInGroup) {   // area 1
+            to = 8 * minersInGroup + 1;
+        } else if (from <= 2 * minersInGroup) {        // area 2
+            to = 8 * minersInGroup + 2;
+        } else if (from <= 3 * minersInGroup) {        // area 3
+            to = 8 * minersInGroup + 3;
+        } else if (from <= 4 * minersInGroup) {        // area 4      
+            to = 8 * minersInGroup + 4;
+        } else if (from <= 5 * minersInGroup) {        // area 5
+            to = 8 * minersInGroup + 5;
+        } else if (from <= 6 * minersInGroup) {        // area 6
+            to = 8 * minersInGroup + 6;
+        } else if (from <= 7 * minersInGroup) {        // area 7
+            to = 8 * minersInGroup + 7;
         } else {                        // area 8
-            to = 64;
+            to = 8 * minersInGroup + 8;
         }
 
         return to;
@@ -235,7 +236,7 @@ public class TransactionEventGenerator implements EventQueue {
     protected int drawToAddressTrx(int from) {
             int to;
             do {
-                to = 1+rng.nextInt(56);
+                to = 1+rng.nextInt(40);
             } while (to==from);
             
         return to;

@@ -9,14 +9,41 @@ import java.security.PublicKey;
  */
 public class Transaction {
 
+    /**
+     * Pengirim uang. Pada real world seperti nomor rekening bank, 
+     * karena itu bertipe PublicKey agar lebih aman
+     */
     private PublicKey sender;
+    
+    /**
+     * Penerima uang, bertipe PublicKey seperti nomor rekening tujan.
+     */
     private PublicKey receiver;
+    
+    /**
+     * Berapa jumlah uang yang akan dikirim
+     */
     private double amount;
+    
+    /**
+     * Kapan transaksi ini dibuat
+     */
     private long timestamp;
+    
+    /**
+     * Hash dari transaksi, hanya sebagai identifier. Pada simulasi tidak
+     * terlalu penting.
+     */
     private String transactionHash;
+    
+    /**
+     * Tanda tangan digital dari pengirim untuk memastikan keabsahan 
+     * transaksi
+     */
     private byte[] signature;
 
-    public Transaction(PublicKey sender, PublicKey receiver, double amount, long timestamp) {
+    public Transaction(PublicKey sender, PublicKey receiver, 
+            double amount, long timestamp) {
         this.sender = sender;
         this.receiver = receiver;
         this.amount = amount;

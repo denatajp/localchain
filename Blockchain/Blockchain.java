@@ -9,7 +9,14 @@ import java.util.List;
  */
 public class Blockchain {
 
+    /**
+     * List berisi blok-blok yang telah ditambang
+     */
     private List<Block> chain;
+    
+    /**
+     * Target kesuitan para mining untuk menambang
+     */
     private final int difficulty;
 
     public Blockchain(int difficulty) {
@@ -41,7 +48,8 @@ public class Blockchain {
     }
     
     /**
-     * Menambahkan block dari local chain ke blockchain utama
+     * Menambahkan block dari local chain ke blockchain utama. Syarat utamanya
+     * blok harus bernilai K = 1, yang berasal dari Localchain.
      * @param localChain - Chain lokal yang mau diambil block-nya
      */
     public void addBlockFromLocalChain(Localchain localChain) {
@@ -50,7 +58,6 @@ public class Blockchain {
         for (Block b : blockFromLocalchain) {
             String previousHash = getLatestBlock().getHash();
             b.setPreviousHash(previousHash);
-            // b.recalculateHash(difficulty);
             if (!b.recalculateHash(difficulty)) {
                 System.out.println("Block " + b.getHash() + " bukan dari Localchain!");
                 continue;

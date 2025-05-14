@@ -11,9 +11,24 @@ import java.util.List;
  */
 public class Localchain {
 
+    /**
+     * List berisi blok-blok yang dimining lokal tiap area
+     */
     private List<Block> chain;
+    
+    /**
+     * Target kesulitan mining. Nilainya sama dengan difficulty di Blockchain.
+     */
     private int difficulty;
+    
+    /**
+     * Identifier untuk tiap localchain.
+     */
     private String name;
+    
+    /**
+     * Hash untuk localchain.
+     */
     private String hash;
 
     /**
@@ -35,13 +50,6 @@ public class Localchain {
         this.name = other.name;
         this.hash = other.hash;
     }
-
-    /**
-    * Ngambil hash total chain
-    * @return 
-    */
-    public String getHash() {return hash;}
-
 
     /**
     * Hitung hash total dari semua block di chain, pake SHA-256
@@ -103,18 +111,17 @@ public class Localchain {
         else{
             newBlock.setPreviousHash(getLatestBlock().getHash());
             chain.add(newBlock);
-        }
-        
+        }   
     }
 
     /**
     * Hitung jumlah block di chain
-     * @return jumlah blok
+    * @return jumlah blok
     */
-    public int chainSize() {
-        return chain.size();
-    }
+    public int chainSize() {return chain.size();}
 
+    public String getHash() {return hash;}
+    
     public void setHash(String hash) {this.hash = hash;}
     
     public String getName() {return name;}
@@ -130,7 +137,9 @@ public class Localchain {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("================================ LOCALCHAIN ================================\n");
+        sb.append("=========================="
+                + "====== LOCALCHAIN ========="
+                + "=======================\n");
         sb.append("Localchain Title  : ").append(name).append("\n");
         sb.append("Difficulty Level  : ").append(difficulty).append("\n");
         sb.append("Localchain Hash   : ").append(hash).append("\n");
@@ -138,7 +147,9 @@ public class Localchain {
         for (Block block : chain) {
             sb.append(block.toString()).append("\n");
         }
-        sb.append("============================================================================\n");
+        sb.append("==========================="
+                + "==========================="
+                + "======================\n");
         return sb.toString();
     }
 

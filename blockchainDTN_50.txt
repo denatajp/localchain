@@ -1,10 +1,9 @@
 # Scenario settings
 Scenario.name = Mining
-Scenario.endTime = 350000
+Scenario.endTime = 10000000
 Scenario.difficulty = 1
 Scenario.nrofHostGroups = 19
-Scenario.minersInGroup = 7
-Scenario.storageCapacity = 500
+Scenario.minersInGroup = 50
 
 # Transmitt range tiap node
 btInterface.type = SimpleBroadcastInterface
@@ -13,21 +12,19 @@ btInterface.transmitRange = 20
 
 Group.router = DecisionEngineRouter
 DecisionEngineRouter.decisionEngine = EpidemicDecisionRouterBlockchain
-DecisionEngineRouter.maxTrx = 10
 Group.movementModel = RandomArea
-Group.bufferSize = 5M
+Group.bufferSize = 50M
 Group.waitTime = 0, 120
 Group.speed = 0.5, 1.5
 Group.msgTtl = 300
-Group.nrofHosts = 67
-
-
+Group.nrofHosts = 411
+ 
 # Home
 Group1.groupID = home
 Group1.movementModel = StationaryMovement
 Group1.nodeLocation = 500,500
 Group1.nrofHosts = 1
-Group1.nrofInterfaces = 1
+Group1.nrofInterfaces  = 1
 Group1.interface1 = btInterface
 Group1.btInterface.transmitRange = 30
 
@@ -35,14 +32,14 @@ Group1.btInterface.transmitRange = 30
 Group2.groupID = minerSatu
 Group2.movementModel = RandomArea
 Group2.moveArea = 1
-Group2.nrofHosts = 7
+Group2.nrofHosts = 50
 Group2.speed = 0.5, 1.
 
 # Miner Area 2
 Group3.groupID = minerDua
 Group3.movementModel = RandomArea
 Group3.moveArea = 2
-Group3.nrofHosts = 7
+Group3.nrofHosts = 50
 Group3.speed = 0.5, 1.
 Group3.nrofInterfaces = 1
 Group3.interface1 = btInterface
@@ -52,7 +49,7 @@ Group4.nrofInterfaces = 1
 Group4.groupID = minerTiga
 Group4.movementModel = RandomArea
 Group4.moveArea = 3
-Group4.nrofHosts = 7
+Group4.nrofHosts = 50
 Group4.speed = 0.5, 1.
 Group4.interface1 = btInterface
 
@@ -60,35 +57,35 @@ Group4.interface1 = btInterface
 Group5.groupID = minerEmpat
 Group5.movementModel = RandomArea
 Group5.moveArea = 4
-Group5.nrofHosts = 7
+Group5.nrofHosts = 50
 Group5.speed = 0.5, 1.
 
 # Miner Area 5
 Group6.groupID = minerLima
 Group6.movementModel = RandomArea
 Group6.moveArea = 5
-Group6.nrofHosts = 7
+Group6.nrofHosts = 50
 Group6.speed = 0.5, 1.
 
 # Miner Area 6
 Group7.groupID = minerEnam
 Group7.movementModel = RandomArea
 Group7.moveArea = 6
-Group7.nrofHosts = 7
+Group7.nrofHosts = 50
 Group7.speed = 0.5, 1.
 
 # Miner Area 7
 Group8.groupID = minerTujuh
 Group8.movementModel = RandomArea
 Group8.moveArea = 7
-Group8.nrofHosts = 7
+Group8.nrofHosts = 50
 Group8.speed = 0.5, 1.
 
 # Miner Area 8
 Group9.groupID = minerLapan
 Group9.movementModel = RandomArea
 Group9.moveArea = 8
-Group9.nrofHosts = 7
+Group9.nrofHosts = 50
 Group9.speed = 0.5, 1.
 
 # Operator Proxy Area 1
@@ -182,18 +179,18 @@ Group19.interface1 = btInterface
 Group19.nodeLocation = 1150,500
 
 # Event pembangkitan transaksi
-Events.nrof = 2
+Events.nrof = 1
 Events1.class = TransactionEventGenerator
-Events1.interval = 5,6
+Events1.interval = 10,11
 Events1.size = 500k,1M
-Events1.hosts = 1,55
+Events1.hosts = 1,400
 Events1.prefix = M
 Events1.time = 0,10000
 
-Report.nrofReports = 1
-Report.warmup = 0
-Report.reportDir = reports/
-Report.report1 = StorageCapacityReport
+#Report.nrofReports = 1
+#Report.warmup = 0
+#Report.reportDir = reports/
+#Report.report1 = MessageStatsReport
 
 ## Movement model settings
 MovementModel.rngSeed = 6
