@@ -92,22 +92,27 @@ Kami mengembangkan project ini menggunakan Netbeans sebagai IDE kami. Untuk inst
    git clone https://github.com/2denata/localchain.git
    ```
 
-3. Pindahkan semua file dari folder `localchain` ke luar folder. Pastikan semua file dan folder ada di direktori `.../src/`
+3. Pindahkan semua file dari folder `localchain` ke luar folder. Pastikan semua file dan folder ada di direktori `.../src/` sehingga file ada di direktori seperti di gambar ![image](https://github.com/user-attachments/assets/7388b91d-0bf0-4cac-90ad-f77932b2e48f)
+
+
 
 
 4. Tambahkan library dan .jar yang dibutuhkan: <br>
 ![image](https://github.com/user-attachments/assets/1eaeb3bb-c42b-419b-b5fe-eba4afab40bd)
-   - Libraries = JUnit 4.12
-   - JAR = "DTNConsoleConnection.jar" dan "ECLA.jar"
+   - Add Library = JUnit 4.12
+   - Add JAR/Folder = "DTNConsoleConnection.jar" dan "ECLA.jar"
 
 5. Download .jar tambahan (Bouncy Castle)
 Library ini penting untuk proses kriptografi. Download dari [link ini](https://www.bouncycastle.org/download/bouncy-castle-java/#latest)
 
-6. Tambahkan bcprov-jdk18on-xxx.jar ke library
+6. Tambahkan bcprov-jdk18on-xxx.jar ke library menggunakan Add JAR/Folder
 
 7. Edit custom configuration running project:
-![image](https://github.com/user-attachments/assets/572d6c23-6ccf-4746-9943-1b8bd92df174)
-
+![image](https://github.com/user-attachments/assets/357a1413-e06b-44da-91d6-6d3888cf1185)
+   - **Main Class** = Class dimana program berjalan, pada project ini menggunakan class main DTNSim dari package core
+   - **Arguments** = Parameter tambahan untuk berjalannya program. Karakter "-b" menandakan running program tidak menggunakan GUI, hapus jika ingin menggunakan GUI. Angka "1" menunjukkan indeks run (run berapa kali), lalu blockchainDTN.txt menunjukkan file settings mana yang digunakan untuk menjalankan simulasi
+   - **Working Directory** = Direktori dimana file simulasi berjalan. Arahkan ke direktori src tadi.
+     
 8. Run Project!
 
 ## Alur Program
@@ -234,7 +239,9 @@ src/
 |
 ├── routing/
 |    └── EpidemicDecisionRouterBlockchain.java
-| 
+|
+├── report/
+|    └── StorageCapacityReport.java
 └── blockchainDTN.txt
 ```
 
@@ -282,6 +289,9 @@ Modifikasi dari RandomWaypoint, perbedaannya adalah membatasi pergerakan randomn
 
 ### MovementModel.java
 Penambahan atribut "moveArea".
+
+### StorageCapacityReport.java
+Report untuk mencatat usage storage pada Operator Proxy per selang waktu tertentu.
 
 ### EpidemicDecisionRouterBlockchain.java
 Algoritma Routing mekanisme transaksi blockchain DTN.
