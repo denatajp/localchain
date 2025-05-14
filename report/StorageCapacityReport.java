@@ -1,45 +1,40 @@
-/* 
- * 
- * 
- */
 package report;
 
-/**
- * Records the average buffer occupancy and its variance with format:
- * <p>
- * <Simulation time> <average buffer occupancy % [0..100]> <variance>
- * </p>
- *
- *
- */
 import java.util.*;
-//import java.util.List;
-//import java.util.Map;
-
 import core.DTNHost;
-import core.Message;
-import core.MessageListener;
 import core.Settings;
 import core.SimClock;
 import core.UpdateListener;
 
+/**
+ * Report mencatat penggunaan storage pada Operator Proxy tiap areanya per
+ * sekian waktu
+ * @author Denata
+ */
 public class StorageCapacityReport extends Report implements UpdateListener {
 
     /**
-     * Record occupancy every nth second -setting id ({@value}). Defines the
-     * interval how often (seconds) a new snapshot of buffer occupancy is taken
-     * previous:5
+     * Settings untuk interval waktu tiap berapa detik report akan dicatat.
+     * -setting id ({@value})
      */
     public static final String STORAGE_REPORT_INTERVAL = "storageInterval";
+    
     /**
-     * Default value for the snapshot interval
+     * Nilai default untuk storageInterval
      */
     public static final int DEFAULT_STORAGE_REPORT_INTERVAL = 180;
 
     private double lastRecord = Double.MIN_VALUE;
+    
+    /**
+     * Interval waktu pencatatan storage usage
+     */
     private int interval;
+    
+    /**
+     * Map yang menyimpan penggunaan storage tiap OP per selang waktu
+     */
     private Map<DTNHost, List<Integer>> usageStorage = new HashMap<>();
-    private int updateCounter = 0;  //new added
 
     public StorageCapacityReport() {
         super();
@@ -75,32 +70,19 @@ public class StorageCapacityReport extends Report implements UpdateListener {
                         temp.add(ho.getStorage());
                         usageStorage.put(ho, temp);
                     }
-//                    String temp;
-//                    temp = "Node : " +ho.getName()+"------Waktu = " + SimClock.getTime() + "-----Storage Capacity = " + ho.getStorage() + "/" + ho.getStorageCapacity();
-//                    write(temp);
                 }
             }
-//            printLine(hosts);
-
-            updateCounter++; // new added
         }
 
     }
 
     public void done() {
-        String intervalWaktu = "";
-
-        System.out.println("Cek dulu");
         for (Map.Entry<DTNHost, List<Integer>> entry : usageStorage.entrySet()) {
             DTNHost host = entry.getKey();
             List<Integer> temp = entry.getValue();
-            System.out.println("Cek");
-            String output = host + " ";
+            String output = host + " " + temp;
             write(output);
-            for (Integer integer : temp) {
-                write(String.valueOf(integer));
-            }
-}
+        }
 
         super.done();
     }

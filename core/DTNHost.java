@@ -26,10 +26,6 @@ import routing.RoutingInfo;
  */
 public class DTNHost implements Comparable<DTNHost> {
 
-    public String getName() {
-        return name;
-    }
-
     private static int nextAddress = 0;
     private int address;
 
@@ -142,8 +138,15 @@ public class DTNHost implements Comparable<DTNHost> {
          */
         private boolean doneReward;
         
+        /**
+         * Jumlah kapasitas yang dimiliki Operator Proxy untuk menyimpan
+         * transaksi
+         */
         private int storageCapacity;
         
+        /**
+         * Penyimpanan transaksi selama proses transaksi
+         */
         private int storage;
     /* ---------------------------------------------------------------------- */
 
@@ -291,16 +294,25 @@ public class DTNHost implements Comparable<DTNHost> {
     }
     
     /**
-     * Mengelompokkan transaksi 
+     * Method untuk membuat group dari list transaksi yang dipegang OP. 
+     * Pada saat 15000 detik pertama waktu simulasi, Operator Proxy akan sudah
+     * memiliki list transaksi pada transactionBuffer, lalu pada selang waktu
+     * ini, OP akan membentuk beberapa grup yang akan diisi tiap transaksi pada
+     * transactionBuffer, tujuannya untuk memudahkan miner memilih transaksi
+     * yang akan dimining nanti (karena pada real world, Block memiliki lebih 
+     * dari 1 transaksi di dalamnya)
      */
     public void groupTransactions() {
         if (!hasGrouped) {
             int jumlah = transactionBuffer.size();
             while (!transactionBuffer.isEmpty()) {
-                // Tentukan ukuran paket secara acak
-                int packetSize = random.nextInt(MAX_PACKET_SIZE - MIN_PACKET_SIZE + 1) + MIN_PACKET_SIZE;
                 
-                packetSize = Math.min(packetSize, transactionBuffer.size()); // Pastikan tidak melebihi jumlah transaksi yang ada
+                // Tentukan ukuran paket secara acak
+                int packetSize = random.nextInt(MAX_PACKET_SIZE - 
+                        MIN_PACKET_SIZE + 1) + MIN_PACKET_SIZE;
+                
+                packetSize = Math.min(packetSize, 
+                        transactionBuffer.size()); // Pastikan tidak melebihi jumlah transaksi yang ada
 
                 // Buat paket transaksi
                 List<Transaction> packet = new ArrayList<>();
@@ -319,19 +331,24 @@ public class DTNHost implements Comparable<DTNHost> {
         }
     }
 
-    public int getStorageCapacity() {
-        return storageCapacity;
-    }
-
-    public void setStorageCapacity(int storageCapacity) {
-        this.storageCapacity = storageCapacity;
-    }
+    /**
+     * Hanya digunakan untuk menghitung Storage Complexity pada Operator Proxy.
+     * Setiap dia menerima sejumlah transaksi, update storage.
+     * @param count Jumlah transaksi yang didapat
+     */
     public void increaseUsage(int count){
         storage += count;
     }
+    
+    /**
+     * Hanya digunakan untuk menghitung Storage Complexity pada Operator Proxy.
+     * Setiap dia membuang transaksi yang dipegang, update storage.
+     * @param count 
+     */
     public void decreaseUsage(int count){
         storage -=count;
     }
+    
     /**
      * Penanda bahwa Operator Proxy siap melakukan storing Localchain ke Home.
      * @return true jika list trx Operator Proxy empty.
@@ -354,6 +371,12 @@ public class DTNHost implements Comparable<DTNHost> {
      */
     public boolean isDoneReward() {return doneReward;}
 
+    public String getName() {return name;}
+    
+    public int getStorageCapacity() {return storageCapacity;}
+
+    public void setStorageCapacity(int storageCapacity) {this.storageCapacity = storageCapacity;}
+    
     public void setDoneReward(boolean doneReward) {this.doneReward = doneReward;}
 
     public void setReadyToStore(boolean readyToStore) {this.readyToStore = readyToStore;}

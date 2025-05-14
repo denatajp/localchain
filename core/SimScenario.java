@@ -163,6 +163,10 @@ public class SimScenario implements Serializable {
      */
     private int minersInGroup;
     /**
+     * Jumlah kapasitas storage Operator Proxy
+     */
+    private int storageCapacity;
+    /**
      * The world instance
      */
     private World world;
@@ -181,9 +185,6 @@ public class SimScenario implements Serializable {
     /**
      * Width of the world
      */
-    
-    private int storageCapacity;
-    
     private int worldSizeX;
     /**
      * Height of the world
@@ -582,7 +583,6 @@ public class SimScenario implements Serializable {
                 
                 hosts.add(host);
             }
-
         }
     }
 

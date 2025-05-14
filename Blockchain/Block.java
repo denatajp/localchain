@@ -35,6 +35,8 @@ public class Block {
     * Angka acak yang dipake waktu mining blok. 
     * Ini kaya "tebakan" biar hash bloknya sesuai sama kriteria kesulitan 
     * (misal: Difficulty nya 5, maka harus ada 5 angka 0 di depan blockHash).
+    * contoh hash 0f833628bae028241 itu difficulty 1
+    *        hash 00027997abccdb21a2836 itu difficulty 3
     */
     private int nonce;
     
@@ -63,7 +65,10 @@ public class Block {
      */
     private double fee;
 
-    
+    /**
+     * Penanda dimana blok ini dibuat. Bernilai 1 jika blok berasal dari Localchain,
+     * bernilai 0 jika blok berasal dari jaringan normal.
+     */
     private int K;
     
     /**
@@ -114,10 +119,11 @@ public class Block {
 
     /**
      * Method calculateHash saat ingin diappend ke Blockchain. Karena nanti ada
-     * perubahan previousHash, cek dahulu noncenya saat dicalculate memenuhi
-     * difficulty atau tidak. 
-     * Jika ya simpan dan pakai nonce sekarang.
-     * Jika tidak, cari nonce lagi sampai hash memenuhi target
+     * perubahan previousHash, maka sudah pasti hash akan berubah, dan tentunya
+     * belum tentu hash yang baru akan memenuhi difficulty. Di sinilah peran 
+     * nilai K dipakai. Jika bernilai 1 maka tandanya blok sudah diproses di 
+     * Localchain, sehingga walaupun hash tidak memenuhi target, tetap akan 
+     * diappend.
      * @param difficulty target kesulitan pada localchain/blockchain
      * @return beri info blok layak direcalculate nggak
      */
@@ -125,6 +131,7 @@ public class Block {
         if (this.K == 0)
             return false;
         
+        // Jika K = 1, blok valid dari Localchain
         calculateHash();
         return true;
     }
@@ -132,6 +139,9 @@ public class Block {
     /**
     * Menambang block (mencari nilai nonce) sampai hashnya sesuai 
     * difficulty (banyak angka 0 di depan hash)
+    * Contoh:
+    *    - hash dengan difficulty 2 : 00bbc9273415ba7b98e0240343b
+    *    - hash dengan difficulty 5 : 00000A2418b8ccfd210948abd2
     * @param difficulty Target jumlah angka 0 di awal hash
     */
     public void mineBlock(int difficulty) {
@@ -179,7 +189,8 @@ public class Block {
 
     public void setFee(double fee) {this.fee = fee;}
 
-    public int getTrxSize(){return transactions.size();}
+    public int getTrxSize() {return transactions.size();}
+     
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

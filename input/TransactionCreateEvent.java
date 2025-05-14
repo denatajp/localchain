@@ -57,15 +57,13 @@ public class TransactionCreateEvent extends MessageEvent {
         }
         
         /**
-         * Bangkitkan pesan pada node miner, kenapa range ID 1-56? karena
-         * ada 8 area dan masing-masing area ada 7 miner, jadi 8x7 = 56, jadi
-         * ID miner antara 1 sampai 56 saja.
+         * Bangkitkan pesan pada node miner, menggunakan range minersInGroup,
+         * jadi hanya node-node miner yang dapat membuat message
          */
         int minersInGroup = SimScenario.getInstance().getMinersInGroup();
         if (this.fromAddr != 0 && this.fromAddr < 8 * minersInGroup ) {
             from.createNewMessage(m);
         }
-        
     }
 
     public Transaction getTransaction() {

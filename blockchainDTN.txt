@@ -1,6 +1,6 @@
 # Scenario settings
 Scenario.name = Mining
-Scenario.endTime = 250000
+Scenario.endTime = 350000
 Scenario.difficulty = 1
 Scenario.nrofHostGroups = 19
 Scenario.minersInGroup = 7
