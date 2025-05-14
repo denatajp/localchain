@@ -30,9 +30,10 @@ Berikut adalah entitas utama dalam simulasi blockchain DTN ini:
   - Menerima dan memverifikasi transaksi dari pengguna.  
   - Berpartisipasi dalam konsensus verifikasi blok.  
 - **Karakteristik**:  
-  - Memiliki dompet kripto (`Wallet`) dengan pasangan kunci ECDSA.  
+  - Pergerakannya random, namun dibatasi satu area saja.
+  - Memiliki dompet kripto (`Wallet`) dengan pasangan kunci ECDSA.
   - Bergerak acak dalam area tertentu (model `RandomArea`).  
-  - Contoh ID: `miner1`, `miner2`, dll.  
+  - Contoh ID: `minerSatu`, `minerDua`, dll.  
 
 
 ### 2. ![opeproxy](https://github.com/user-attachments/assets/44bcf68a-e832-4d55-bda3-cbd262ea20ae) **Operator Proxy**  
@@ -42,6 +43,7 @@ Berikut adalah entitas utama dalam simulasi blockchain DTN ini:
   - Memilih blok tercepat untuk ditambahkan ke *localchain*.
   - Bertugas memberikan fee kepada miner terpilih
 - **Karakteristik**:  
+  - Pergerakannya hanya satu jalur, dari Home ke satu area yang dihandle saja
   - Memiliki buffer transaksi (`transactionBuffer`).  
   - Mengelola `localchain` (rantai blok sementara).  
   - Contoh ID: `ope1`, `ope2`, dll.  
@@ -62,7 +64,7 @@ Berikut adalah entitas utama dalam simulasi blockchain DTN ini:
   - Memilih *localchain* terbaik (terpanjang) dari Home.  
   - Mengintegrasikan *localchain* ke blockchain utama di Internet.  
 - **Karakteristik**:  
-  - Bergerak cepat untuk efisiensi koordinasi.  
+  - Pergerakannya satu jalur, dari Home ke Internet saja. 
   - Contoh ID: `col1`.  
 
 
