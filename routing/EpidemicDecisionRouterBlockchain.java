@@ -9,6 +9,7 @@ import core.Message;
 import core.Settings;
 import core.SimClock;
 import core.SimScenario;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -158,7 +159,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                 menghitung hash dari masing-masing localchain, lalu selanjutnya
                 diserahkan kepada Collector. Pada proses ini, Collector memilah
                 localchain mana yang sebaiknya ditambahkan terlebih dahulu ke
-                Blockchain nanti, dengan memilih localchain dengan size terbesar
+                Blockchain nanti, dengan memilih localchain dengan hash terkecil
                 yang akan ditambahkan duluan
              */
             selection_algorithmFour(host, peer);
@@ -398,7 +399,7 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
      *
      * Algoritma bekerja dengan langkah-langkah: 
      *  1. Collector memeriksa kelengkapan localchain yang ada di Home 
-     *  2. Pilih localchain dengan ukuran terpanjang sebagai kandidat terbaik 
+     *  2. Pilih localchain dengan hash terkecil sebagai kandidat terbaik 
      *  3. Melakukan perhitungan hash ulang untuk memastikan integritas data 
      *  4. Kirim localchain terpilih ke internet dan ubah statusnya
      *  5. Hentikan proses jika semua transaksi telah diproses
@@ -433,11 +434,17 @@ public class EpidemicDecisionRouterBlockchain implements RoutingDecisionEngine {
                             sL.setHash(hash);
                         }
 
-                        // pemilihan Localchain dengan rantai terpanjang
                         Localchain selected = null;
                         for (Localchain lc : host.getStoredLocalchains()) {
-                            if (selected == null || lc.chainSize() > selected.chainSize()) {
+                            BigInteger hashValue = new BigInteger(lc.getHash(), 16); // konversi ke desimal
+
+                            if (selected == null) {
                                 selected = lc;
+                            } else {
+                                BigInteger selectedHashValue = new BigInteger(selected.getHash(), 16);
+                                if (hashValue.compareTo(selectedHashValue) < 0) {
+                                    selected = lc;
+                                }
                             }
                         }
 
