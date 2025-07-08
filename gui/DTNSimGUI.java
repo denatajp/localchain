@@ -4,6 +4,7 @@
  */
 package gui;
 
+import Blockchain.CLIMessageStatus;
 import gui.playfield.PlayField;
 
 import java.awt.event.MouseAdapter;
@@ -100,6 +101,9 @@ public class DTNSimGUI extends DTNSimUI {
 		double simTime = SimClock.getTime();
 		double endTime = scen.getEndTime();
 		
+                CLIMessageStatus.start();
+                CLIMessageStatus.statusStartGenerate();
+                
 		startGUI();
 		
 		// Startup DTN2Manager

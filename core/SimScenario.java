@@ -166,6 +166,7 @@ public class SimScenario implements Serializable {
      * Jumlah kapasitas storage Operator Proxy
      */
     private int storageCapacity;
+
     /**
      * The world instance
      */

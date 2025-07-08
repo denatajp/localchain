@@ -324,9 +324,7 @@ public class DTNHost implements Comparable<DTNHost> {
                 trx.add(packet);
             }
 
-            System.out.println("Sebanyak "+jumlah+" transaksi tersimpan di buffer!");
-            System.out.println("Semua transaksi telah dikelompokkan di " + name);
-            System.out.println("Storage : "+ storage);
+            System.out.println("Semua transaksi telah dikelompokkan di Area " + name.charAt(3));
             this.hasGrouped = true;
         }
     }

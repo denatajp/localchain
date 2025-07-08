@@ -3,6 +3,7 @@
  * Released under GPLv3. See LICENSE.txt for details. 
  */
 package core;
+import Blockchain.CLIMessageStatus;
 import gui.DTNSimGUI;
 
 import java.lang.reflect.Method;
@@ -77,9 +78,10 @@ public class DTNSim {
 		initSettings(confFiles, firstConfIndex);
 		
 		if (batchMode) {
+                        CLIMessageStatus.setGuiMode(false);
 			long startTime = System.currentTimeMillis();
 			for (int i=nrofRuns[0]; i<nrofRuns[1]; i++) {
-				print("Run " + (i+1) + "/" + nrofRuns[1]);
+//				print("Run " + (i+1) + "/" + nrofRuns[1]);
 				Settings.setRunIndex(i);
 				resetForNextRun();
 				new DTNSimTextUI().start();

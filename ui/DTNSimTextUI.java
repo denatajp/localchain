@@ -4,6 +4,7 @@
  */
 package ui;
 
+import Blockchain.CLIMessageStatus;
 import core.SimClock;
 
 /**
@@ -14,17 +15,22 @@ public class DTNSimTextUI extends DTNSimUI {
 	private long startTime; // simulation start time
 	/** How often the UI view is updated (milliseconds) */
 	public static final long UI_UP_INTERVAL = 60000;
+        public static boolean doneBlockchainSimulation = false;
 
 	protected void runSim() {
 		double simTime = SimClock.getTime();
 		double endTime = scen.getEndTime();
 	
-		print("Running simulation '" + scen.getName()+"'");
-
+//		print("Running simulation '" + scen.getName()+"'");
+//                print("");
+                CLIMessageStatus.start();
+                CLIMessageStatus.statusStartGenerate();
+                
 		startTime = System.currentTimeMillis();
 		lastUpdateRt = startTime;
 		
 		while (simTime < endTime && !simCancelled){
+                        if (doneBlockchainSimulation == true) break;
 			try {
 				world.update();
 			} catch (AssertionError e) {

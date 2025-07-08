@@ -43,6 +43,7 @@ public class EpidemicDecisionRouter implements RoutingDecisionEngine{
 
     @Override
     public void connectionUp(DTNHost thisHost, DTNHost peer) {
+        System.out.println("up!!");
     }
 
     @Override
