@@ -183,7 +183,7 @@ Library ini penting untuk proses kriptografi. Download dari [link ini](https://w
 - Setelah disetor, kemudian proses dilanjutkan dengan memilih Localchain terbaik. Proses selection ini dilakukan antara node Home dengan node Collector.
 - Saat Collector mengunjungi Home, akan memeriksa `storedLocalchains` di Home untuk memilih Localchain terbaik dengan rantai (blok) terpanjang.
 - Collector juga akan mengkalkulasi hash dari tiap Localchain. Hash yang dimaksud adalah nilai dari penggabungan _hash_ pada blok-blok di dalam localchain tersebut. Jadi sekarang tiap localchain punya hashnya sendiri-sendiri.
-- Selanjutnya Collector memeriksa dalam list `storedLocalchains` menghitung size dari setiap localchain. Localchain dengan size terbesar akan dimasukkan ke variabel sementara `selected`.
+- Selanjutnya Collector memeriksa dalam list `storedLocalchains` menghitung nilai hash dari hexadecimal menjadi desimal. Localchain dengan hash terkecil akan dimasukkan ke variabel sementara `selected`.
 - Collector kemudian mengambil `selected` tadi dan memasukkan ke penyimpanan miliknya yaitu `selectedLocalchain`. Lalu menghapus localchain terpilih dari list `storedLocalchains` milik Home tadi.
 - Proses selection selesai, Collector sudah memegang satu localchain (`selectedLocalchain is not null`) dan siap pergi ke node Internet untuk menambahkan localchain terpilih ke Blockchain, dan jika Collector datang ke Home lagi sebelum berkunjung ke Internet, maka tidak akan melakukan apa-apa karena dia sedang memegang Localchain.
 
@@ -217,6 +217,7 @@ src/
 |   ├── Wallet.java
 |   ├── Block.java
 |   ├── Blockchain.java
+|   ├── CLIMessageStatus.java
 |   └── Localchain.java
 |
 ├── core/
@@ -269,6 +270,9 @@ Class Block yang merupakan class penting yang digunakan dalam mekanisme transaks
 
 ### Blockchain.java
 Blockchain digunakan sebagai rantai utama yang tersimpan di Internet.
+
+### CLIMessageStatus.java
+Class untuk membuat tampilan UI pada terminal
 
 ### Localchain.java
 Blockchain lokal yang dimiliki oleh setiap Operator Proxy.
