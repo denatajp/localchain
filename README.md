@@ -114,6 +114,8 @@ Library ini penting untuk proses kriptografi. Download dari [link ini](https://w
    - **Working Directory** = Direktori dimana file simulasi berjalan. Arahkan ke direktori src tadi.
      
 8. Run Project!
+   ![image](https://github.com/user-attachments/assets/3751b4b4-71e7-4805-913c-eed3067a8366)
+
 
 ## Alur Program
 ### Inisialisasi:
